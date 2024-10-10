@@ -1,139 +1,184 @@
 LazyAlchemyLearner = {}
 
 LazyAlchemyLearner.name = "LazyAlchemyLearner"
-local comboInfo = 
+local basegameCombo = 
 {
-{77583,77591},
-{77583,77585},
-{77583,30152},
-{30157,30153},
-{30148,30154},
-{30148,77585},
-{30148,30165},
-{30160,30154},
-{30164,30160},
-{30164,30159},
-{30164,30157},
-{30161,30154},
-{30161,30157},
-{30162,30149},
-{30162,30157},
-{30162,30166},
-{30151,30166},
-{30151,30152},
-{30151,30155},
-{77587,77581},
-{77587,77589},
-{77587,30156},
-{77587,77590},
-{30156,30163},
-{30156,30165},
-{30158,30152},
-{30158,30161},
-{30158,30166},
-{30155,30163},
-{30155,77584},
-{30163,30157},
-{77591,77590},
-{77591,30154},
-{30153,30159},
-{30153,30166},
-{77590,30165},
-{30165,77585},
-{77589,77584},
-{77589,30157},
-{77589,30154},
-{30159,77584},
-{77584,77591},
-{30149,30151},
-{77581,30159},
-{77581,30165},
-{77581,30149},
-{30166,30155},
-{30159,30166},
-{77585,77584},
-{30153,30165},
-{77584,30165},
+{77583,77591}, -- Beetle Scuttle & Mudcrab Chitin
+{77583,77585}, -- Beetle Scuttle & Butterfly Wing
+{77583,30152}, -- Beetle Scuttle & Violet Coprinus
+{30157,30153}, -- Blessed Thistle & Namira's Rot
+{30148,30154}, -- Blue Entoloma & White Cap
+{30148,77585}, -- Blue Entoloma & Butterfly Wing
+{30148,30165}, -- Blue Entoloma & Nirnroot
+{30160,30154}, -- Bugloss & White Cap
+{30164,30160}, -- Columbine & Bugloss
+{30164,30159}, -- Columbine & Wormwood
+{30164,30157}, -- Columbine & Blessed Thistle
+{30161,30154}, -- Corn Flower & White Cap
+{30161,30157}, -- Corn Flower & Blessed Thistle
+{30162,30149}, -- Dragonthorn & Stinkhorn
+{30162,30157}, -- Dragonthorn & Blessed Thistle
+{30162,30166}, -- Dragonthorn & Water Hyacinth
+{30151,30166}, -- Emetic Russula & Water Hyacinth
+{30151,30152}, -- Emetic Russula & Violet Coprinus
+{30151,30155}, -- Emetic Russula & Luminous Russula
+{77587,77581}, -- Fleshfly Larva & Torchbug Thorax
+{77587,77589}, -- Fleshfly Larva & Scrib Jelly
+{77587,30156}, -- Fleshfly Larva & Imp Stool
+{77587,77590}, -- Fleshfly Larva & Nightshade
+{30156,30163}, -- Imp Stool & Mountain Flower
+{30156,30165}, -- Imp Stool & Nirnroot
+{30158,30152}, -- Lady's Smock & Violet Coprinus
+{30158,30161}, -- Lady's Smock & Corn Flower
+{30158,30166}, -- Lady's Smock & Water Hyacinth
+{30155,30163}, -- Luminous Russula & Mountain Flower
+{30155,77584}, -- Luminous Russula & Spider Egg
+{30163,30157}, -- Mountain Flower & Blessed Thistle
+{77591,77590}, -- Mudcrab Chitin & Nightshade
+{77591,30154}, -- Mudcrab Chitin & White Cap
+{30153,30159}, -- Namira’s Rot & Wormwood
+{30153,30166}, -- Namira’s Rot & Water Hyacinth
+{77590,30165}, -- Nightshade & Nirnroot
+{30165,77585}, -- Nirnroot & Butterfly Wing
+{77589,77584}, -- Scrib Jelly & Spider Egg
+{77589,30157}, -- Scrib Jelly & Blessed Thistle
+{77589,30154}, -- Scrib Jelly & White Cap
+{30159,77584}, -- Wormwood & Spider Egg
+{77584,77591}, -- Spider Egg & Mudcrab Chitin
+{30149,30151}, -- Stinkhorn & Emetic Russula
+{77581,30159}, -- Torchbug Thorax & Wormwood
+{77581,30165}, -- Torchbug Thorax & Nirnroot
+{77581,30149}, -- Torchbug Thorax & Stinkhorn
+{30166,30155}, -- Water Hyacinth & Luminous Russula
+{30159,30166}, -- Wormwood & Water Hyacinth
+{77585,77584}, -- Butterfly Wing & Spider Egg
+{30153,30165}, -- Namira’s Rot & Nirnroot
+{77584,30165}, -- Spider Egg & Nirnroot
 }
 
-local expensiveCombos =
+local dlcCombos =
 {
-	{139019,77583},
-	{139019,77589},
-	{139020,77591},
-	{139020,77584},
-	{139020,77587},
-	{150731,77584},
-	{150731,150789},
-	{150731,150669},
-	{150671,150789},
-	{150671,77581},
-	{150671,150670},
-	{150671,30153},
-	{150789,77587},
-	{150789,77584},
-	{150670,77590},
-	{150670,150669},
-	{150669,30154},
-	{150669,150672},
-	{150672,30166},
-	{150672,77587},
-	{30166,30151},
-	{30166,30162},
-	{30161,30157},
-	{30156,30163},
-	{30156,30165},
-	{30158,30152},
-	{30158,30161},
-	{30155,30163},
-	{30163,30157},
-	{30165,77585},
-}
-local extraCombos = 
-{
-	{139020}, -- clam mudcrab
-	{139020}, -- clam Dragon’s Bile
-	{139020}, -- clam luminousw
-	{139019}, -- mother beetle
-	{139019}, -- mother scrib jelly
-	{150731}, -- bile blood
-	{150789}, -- bile blue entomala
-	{150789}, -- bile butterfly
-	{150789}, -- bile blood
-	{150789}, -- bile rheum
-	{150731}, -- blood mudcrab
-	{150731}, -- blood spider
-	{150731}, -- blood dragonthorn
-	{150671}, -- rheum
-	{},
-	{},
-	{},
-	139020,-- clam
-	150672,-- crmison
-	150789,-- bile
-	150731,-- blood
-	150671,-- rheum
-	150670,-- vile
-	139019,-- powdered
-	150669,-- chaurs
+{139019,77583}, -- Powdered Mother of Pearl & Beetle Scuttle
+{139019,77589}, -- Powdered Mother of Pearl & Scrib Jelly
+{139020,77591}, -- Clam Gall & Mudcrab Chitin	
+{139020,77584}, -- Clam Gall & Spider Egg
+{139020,77587}, -- Clam Gall & Fleshfly Larva
+{150731,77584}, -- Dragon's Blood & Spider Egg
+{150731,150789}, -- Dragon's Blood & Dragon's Bile
+{150731,150669}, -- Dragon's Blood & Chaurus Egg
+{150671,150789}, -- Dragon Rheum & Dragon's Bile
+{150671,77581}, -- Dragon Rheum & Torchbug Thorax
+{150671,150670}, -- Dragon Rheum & Vile Coagulant
+{150671,30153}, -- Dragon Rheum & Namira’s Rot
+{150789,77587}, -- Dragon's Bile & Fleshfly Larva
+{150789,77584}, -- Dragon's Bile & Spider Egg
+{150670,77590}, -- Vile Coagulant & Nightshade
+{150670,150669}, -- Vile Coagulant & Chaurus Egg
+{150669,30154}, -- Chaurus Egg & White Cap
+{150669,150672}, -- Chaurus Egg & Crimson Nirnroot
+{150672,30166}, -- Crimson Nirnroot & Water Hyacinth
+{150672,77587}, -- Crimson Nirnroot & Fleshfly Larva
 }
 
-
-local solvent = 
+local solvents = 
 {
+75357, -- Grease 3
+75358, -- Ichor 10
+75359, -- Slime 20
+75360, -- Gall 30
+75361, -- Terebinthine 40
+75362, -- Pitch-Bile cp10
+75363, -- Tarblack cp50
+75364, -- Night-Oil cp100
+75365, -- Alcahest cp150
 
+883, -- Natural Water 3
+1187, -- Clear Water 10
+4570, -- Pristine Water 20
+23265, -- Cleansed Water 30
+23266, -- Filtered Water 40
+23267, -- Purified Water cp10
+23268, -- Cloud Mist cp50
+64500, -- Star Dew cp100
+64501, -- Lorkhan's Tears cp150
 }
-local poison =
+
+-- a static list of all traits of each reagent, will be used to determine what combos still need to be executed
+local reagentTraits = 
 {
-75357,
-75358,
-75359,
-75360,
-75361,
-75362,
-75363,
-75364,
-75365,
+[77583] = {"Breach", "Increase Armor", "Protection", "Vitality"}, -- Beetle Scuttle
+[30157] = {"Restore Stamina", "Increase Weapon Power", "Ravage Health", "Speed"}, -- Blessed Thistle
+[30148] = {"Ravage Magicka", "Cowardice", "Restore Health", "Invisible"}, -- Blue Entoloma
+[30160] = {"Increase Spell Resist", "Restore Health", "Cowardice", "Restore Magicka"}, -- Bugloss
+[77585] = {"Restore Health", "Uncertainty", "Lingering Health", "Vitality"}, -- Butterfly Wing
+[150669] = {"Timidity", "Ravage Magicka", "Restore Stamina", "Detection"}, -- Chaurus Egg
+[139020] = {"Increase Spell Resist", "Hindrance", "Vulnerability", "Defile"}, -- Clam Gall
+[30164] = {"Restore Health", "Restore Magicka", "Restore Stamina", "Unstoppable"}, -- Columbine
+[30161] = {"Restore Magicka", "Increase Spell Power", "Ravage Health", "Detection"}, -- Corn Flower
+[150672] = {"Timidity", "Spell Critical", "Gradual Ravage Health", "Restore Health"}, -- Crimson Nirnroot
+[150671] = {"Restore Magicka", "Heroism", "Enervation", "Speed"}, -- Dragon Rheum
+[150789] = {"Heroism", "Vulnerability", "Invisible", "Vitality"}, -- Dragon's Bile
+[150731] = {"Lingering Health", "Restore Stamina", "Heroism", "Defile"}, -- Dragon's Blood
+[30162] = {"Increase Weapon Power", "Restore Stamina", "Fracture", "Weapon Critical"}, -- Dragonthorn
+[30151] = {"Ravage Health", "Ravage Magicka", "Ravage Stamina", "Entrapment"}, -- Emetic Russula
+[77587] = {"Ravage Stamina", "Vulnerability", "Gradual Ravage Health", "Vitality"}, -- Fleshfly Larva
+[30156] = {"Maim", "Ravage Stamina", "Increase Armor", "Enervation"}, -- Imp Stool
+[30158] = {"Increase Spell Power", "Restore Magicka", "Breach", "Spell Critical"}, -- Lady's Smock
+[30155] = {"Ravage Stamina", "Maim", "Restore Health", "Hindrance"}, -- Luminous Russula
+[30163] = {"Increase Armor", "Restore Health", "Maim", "Restore Stamina"}, -- Mountain Flower
+[77591] = {"Increase Spell Resist", "Increase Armor", "Protection", "Defile"}, -- Mudcrab Chitin
+[30153] = {"Spell Critical", "Speed", "Invisible", "Unstoppable"}, -- Namira's Rot
+[77590] = {"Ravage Health", "Protection", "Gradual Ravage Health", "Defile"}, -- Nightshade
+[30165] = {"Ravage Health", "Uncertainty", "Enervation", "Invisible"}, -- Nirnroot
+[139019] = {"Lingering Health", "Speed", "Vitality", "Protection"}, -- Powdered Mother of Pearl
+[77589] = {"Ravage Magicka", "Speed", "Vulnerability", "Lingering Health"}, -- Scrib Jelly
+[77584] = {"Hindrance", "Invisible", "Lingering Health", "Defile"}, -- Spider Egg
+[30149] = {"Fracture", "Ravage Health", "Increase Weapon Power", "Ravage Stamina"}, -- Stinkhorn
+[77581] = {"Fracture", "Enervation", "Detection", "Vitality"}, -- Torchbug Thorax
+[150670] = {"Timidity", "Ravage Health", "Restore Magicka", "Protection"}, -- Vile Coagulant
+[30152] = {"Breach", "Ravage Health", "Increase Spell Power", "Ravage Magicka"}, -- Violet Coprinus
+[30166] = {"Restore Health", "Spell Critical", "Weapon Critical", "Entrapment"}, -- Water Hyacinth
+[30154] = {"Cowardice", "Ravage Magicka", "Increase Spell Resist", "Detection"}, -- White Cap
+[30159] = {"Weapon Critical", "Hindrance", "Detection", "Unstoppable"}, -- Wormwood
+}
+
+-- used to store the calculated amount of inventory of each reagent
+local reagentAmounts = 
+{
+[77583] = 0, -- Beetle Scuttle
+[30157] = 0, -- Blessed Thistle
+[30148] = 0, -- Blue Entoloma
+[30160] = 0, -- Bugloss
+[77585] = 0, -- Butterfly Wing
+[150669] = 0, -- Chaurus Egg
+[139020] = 0, -- Clam Gall
+[30164] = 0, -- Columbine
+[30161] = 0, -- Corn Flower
+[150672] = 0, -- Crimson Nirnroot
+[150671] = 0, -- Dragon Rheum
+[150789] = 0, -- Dragon's Bile
+[150731] = 0, -- Dragon's Blood
+[30162] = 0, -- Dragonthorn
+[30151] = 0, -- Emetic Russula
+[77587] = 0, -- Fleshfly Larva
+[30156] = 0, -- Imp Stool
+[30158] = 0, -- Lady's Smock
+[30155] = 0, -- Luminous Russula
+[30163] = 0, -- Mountain Flower
+[77591] = 0, -- Mudcrab Chitin
+[30153] = 0, -- Namira's Rot
+[77590] = 0, -- Nightshade
+[30165] = 0, -- Nirnroot
+[139019] = 0, -- Powdered Mother of Pearl
+[77589] = 0, -- Scrib Jelly
+[77584] = 0, -- Spider Egg
+[30149] = 0, -- Stinkhorn
+[77581] = 0, -- Torchbug Thorax
+[150670] = 0, -- Vile Coagulant
+[30152] = 0, -- Violet Coprinus
+[30166] = 0, -- Water Hyacinth
+[30154] = 0, -- White Cap
+[30159] = 0, -- Wormwood
 }
 
 local essence, potency, aspect =  LibLazyCrafting.getGlyphInfo()
@@ -142,41 +187,164 @@ local function getItemLinkFromItemId(itemId)
 	return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, ITEMSTYLE_NONE, 0, 10000) 
 end
 
-local function getSolvent(proficiency, start)
+local function getSolvent(proficiency, startingPosition)
+	-- Check solvents
+	for i = startingPosition , proficiency + 1 do
+		-- poisons
+		local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(solvents[i]))
+		if((bag + bank + craft) > 0) then
+			return bag + bank + craft, solvents[i], i
+		end
 
-	for i = start, 1 , -1 do
-		local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(poison[i]))
-		return bag + bank + craft, poison[i],  i
+		-- potions
+		local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(solvents[i+9]))
+		if((bag + bank + craft) > 0) then
+			return bag + bank + craft, solvents[i+9], i
+		end
 	end
-	return nil, nil,nil
+	
+	return nil, nil, nil
+end
+
+local function GetAvailableReagent(reagentId)
+	local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(reagentId))
+	if((bag + bank + craft) > 0) then
+		return bag + bank + craft
+	end
+	return nil
+end
+
+-- Function to find matching traits between two reagents
+local function GetMatchingTraits(reagent1, reagent2)
+    local traits1 = reagentTraits[reagent1]
+    local traits2 = reagentTraits[reagent2]
+    local matchingTraits = {}
+
+    -- Compare the traits from both reagents
+    for _, trait1 in ipairs(traits1) do
+        for _, trait2 in ipairs(traits2) do
+            if trait1 == trait2 then
+                table.insert(matchingTraits, trait1)
+            end
+        end
+    end
+    return matchingTraits
+end
+
+-- Function to check if a value exists in a table
+local function Contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
+        end
+    end
+    return false
 end
 
 local function alchemyQueuer(combos)
 	local LLC = LazyAlchemyLearner.LLC
 	local remainingSolvent = 0
 	local solvent
-	local position= math.min(GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL) + 1, #poison) + 1
+	local position = 1
 	local queued = 0
+	
+	--I am adding a solvent check here to see if the player has any solvent at all, no need to process anything if nothing will be queued anyway
+	remainingSolvent, solvent, position = getSolvent(GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL), position)
+	
+	if(remainingSolvent == nil) then
+		d("You need solvents to craft potions")
+		return queued
+	end
+	
 	for i = 1, #combos do
 		local known = true
+		-- we check what traits between the two reagents are matching
+		local theoreticalMatchingTraits = GetMatchingTraits(combos[i][1], combos[i][2])
+		local amountMatchingReagant1 = 0
+		local amountMatchingReagant2 = 0
 		for j = 1, 4 do
-			known = known and GetItemLinkReagentTraitInfo(getItemLinkFromItemId(comboInfo[i][1]), j) and 
-			GetItemLinkReagentTraitInfo(getItemLinkFromItemId(comboInfo[i][2]), j)
-		end
-		if remainingSolvent == 0 then
-			local solventProficiency = GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL)
-			if solventProficiency == 0 then
-				solventProficiency = 1
-			end
-			remainingSolvent, solvent, position = getSolvent(solventProficiency, position-1)
-			
-		else
 		
-			if not known then -- 75358
-				remainingSolvent = remainingSolvent - 1
+			--[[
+				k = known status of the reagant's trait {true/false}
+				n = name of the trait, currently the name wil be nil if the trait is unknown
+			--]]
+			local k1, n1 = GetItemLinkReagentTraitInfo(getItemLinkFromItemId(combos[i][1]), j)
+			local k2, n2 = GetItemLinkReagentTraitInfo(getItemLinkFromItemId(combos[i][2]), j)
+
+			-- as a precaution, we'll set the name of the trait to nil if it's not known, since this is the behaviour we expect in the next step
+			if not k1 then
+				n1 = nil
+			end
+
+			if not k2 then
+				n2 = nil
+			end
+			
+			--we count the amount of known matching traits of each reagant
+			if Contains(theoreticalMatchingTraits, n1) then
+				amountMatchingReagant1 = amountMatchingReagant1 + 1
+			end
+			
+			if Contains(theoreticalMatchingTraits, n2) then
+				amountMatchingReagant2 = amountMatchingReagant2 + 1
+			end
+		end
+		
+		-- if the amount of actual known, matching traits is not the same as the theoretical amount of matching traits known will be false
+		known = amountMatchingReagant1 == #theoreticalMatchingTraits and amountMatchingReagant2 == #theoreticalMatchingTraits
+		
+		--Leaving this here for debug purposes for now
+		 local reagantName1 = GetItemLinkName(getItemLinkFromItemId(combos[i][1]))
+		 local reagantName2 = GetItemLinkName(getItemLinkFromItemId(combos[i][2]))
+		
+		--if unknown traits detected we will attempt to queue a potion
+		if not known then
+		
+			-- we check if there are any solvents left of the currently selected solvent, if not we automatically get the next best solvent
+			if (remainingSolvent == 0) then
+				--decide the solvent we are going to use
+				remainingSolvent, solvent, position = getSolvent(GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL), position)
+	
+				if(remainingSolvent == nil) then
+					d("You need solvents to craft potions")
+					return queued
+				end
+			end
+		
+			-- we reduce the amount of available solvents
+			remainingSolvent = remainingSolvent - 1
+			
+			-- Check if we have enough reagent available, if not we output to chat and skip the potion
+			local canCraftPotion = true
+			
+			-- check availability of reagant 1
+			if(reagentAmounts[combos[i][1]] == 0) then
+				reagentAmounts[combos[i][1]]  = GetAvailableReagent(combos[i][1])
+			end
+
+			if(reagentAmounts[combos[i][1]]  == nil) then
+				--skip this potion
+				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName1) .. " to learn all its traits.")
+				canCraftPotion = false
+			end
+			
+			-- check availability of reagant 2
+			if(reagentAmounts[combos[i][2]]) == 0 then
+				reagentAmounts[combos[i][2]]  = GetAvailableReagent(combos[i][2])
+			end
+
+			if(reagentAmounts[combos[i][2]]  == nil) then
+				--skip this potion
+				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName2) .. " to learn all its traits.")
+				canCraftPotion = false
+			end
+			
+			if(canCraftPotion) then
+				reagentAmounts[combos[i][1]] = reagentAmounts[combos[i][1]] - 1
+				reagentAmounts[combos[i][2]] = reagentAmounts[combos[i][2]] - 1
 				queued = queued + 1
-				d("Lazy Alchemy Learner: Queued " .. getItemLinkFromItemId(solvent) .. " with " .. getItemLinkFromItemId(comboInfo[i][1]) .. " and " .. getItemLinkFromItemId(comboInfo[i][2]) .. ".")
-				LLC:CraftAlchemyItemId(solvent, comboInfo[i][1],comboInfo[i][2],nil, 1, true,'1')
+
+				LLC:CraftAlchemyItemId(solvent, combos[i][1],combos[i][2],nil, 1, true,'1')
 			end
 		end
 	end
@@ -185,19 +353,17 @@ local function alchemyQueuer(combos)
 end
 
 -- |H1:item:75362:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
-local function queueLearningAlchemy(includeExpensive)
-	local queued = alchemyQueuer(comboInfo)
-	if includeExpensive then
-		queued = alchemyQueuer(extraCombos) + queued
+local function queueLearningAlchemy(includeDlc)
+	d("queueLearningAlchemy " .. tostring(includeDlc))
+	local queued = alchemyQueuer(basegameCombo)
+	if includeDlc then
+		queued = alchemyQueuer(dlcCombos) + queued
 	end
-	if queued == 0 then
-		d("Lazy Alchemy Learner: Nothing queued? Perhaps you know everything? This addon does not learn the expensive / non achievement item traits")
-	else
-		d("Lazy Alchemy Learner: "..queued.." potions queued to craft")
-	end
+	
+	d("Lazy Alchemy Learner: "..queued.." potions queued to craft")
 end
 
-local function queueLearningEnchanting(includeExpensive)
+local function queueLearningEnchanting(includeDlc)
 	d("Not implemented yet")
 end
 
@@ -214,13 +380,13 @@ end
 EVENT_MANAGER:RegisterForEvent(LazyAlchemyLearner.name, EVENT_ADD_ON_LOADED, LazyAlchemyLearner.OnAddOnLoaded)
 
 local function genericSlashCommand(args)
-	local searchResult = { string.match(option,"^(%S*)%s*(.-)$") }
+	local searchResult = { string.match(args,"^(%S*)%s*(.-)$") }
 	if searchResult[1] == 'alchemy' then
 		queueLearningAlchemy(searchResult[2] == 'all')
 	elseif searchResult[1] == 'enchant' then
-		queueEnchanting(searchResult[2] == 'all')
+		queueLearningEnchanting(searchResult[2] == 'all')
 	elseif searchResult[1] == 'both' then
-		queueEnchanting(searchResult[2] == 'all')
+		queueLearningEnchanting(searchResult[2] == 'all')
 		queueLearningAlchemy(searchResult[2] == 'all')
 	else
 		d("Possible values:")
@@ -233,6 +399,16 @@ local function genericSlashCommand(args)
 	end
 end
 
--- SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
-SLASH_COMMANDS["/learnalchemytraits"] = queueLearningAlchemy
+SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
+SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
+    local includeDlc = false  -- Default to false
+
+    -- Check if the argument is to include DLC
+    if arg == "all" then
+        includeDlc = true
+    end
+
+    -- Call the queueLearningAlchemy function with the parsed argument
+    queueLearningAlchemy(includeDlc)
+end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
