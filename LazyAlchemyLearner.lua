@@ -354,7 +354,6 @@ end
 
 -- |H1:item:75362:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 local function queueLearningAlchemy(includeDlc)
-	d("queueLearningAlchemy " .. tostring(includeDlc))
 	local queued = alchemyQueuer(basegameCombo)
 	if includeDlc then
 		queued = alchemyQueuer(dlcCombos) + queued
