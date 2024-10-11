@@ -145,40 +145,6 @@ local reagentTraits =
 -- used to store the calculated amount of inventory of each reagent
 local reagentAmounts = 
 {
-[77583] = 0, -- Beetle Scuttle
-[30157] = 0, -- Blessed Thistle
-[30148] = 0, -- Blue Entoloma
-[30160] = 0, -- Bugloss
-[77585] = 0, -- Butterfly Wing
-[150669] = 0, -- Chaurus Egg
-[139020] = 0, -- Clam Gall
-[30164] = 0, -- Columbine
-[30161] = 0, -- Corn Flower
-[150672] = 0, -- Crimson Nirnroot
-[150671] = 0, -- Dragon Rheum
-[150789] = 0, -- Dragon's Bile
-[150731] = 0, -- Dragon's Blood
-[30162] = 0, -- Dragonthorn
-[30151] = 0, -- Emetic Russula
-[77587] = 0, -- Fleshfly Larva
-[30156] = 0, -- Imp Stool
-[30158] = 0, -- Lady's Smock
-[30155] = 0, -- Luminous Russula
-[30163] = 0, -- Mountain Flower
-[77591] = 0, -- Mudcrab Chitin
-[30153] = 0, -- Namira's Rot
-[77590] = 0, -- Nightshade
-[30165] = 0, -- Nirnroot
-[139019] = 0, -- Powdered Mother of Pearl
-[77589] = 0, -- Scrib Jelly
-[77584] = 0, -- Spider Egg
-[30149] = 0, -- Stinkhorn
-[77581] = 0, -- Torchbug Thorax
-[150670] = 0, -- Vile Coagulant
-[30152] = 0, -- Violet Coprinus
-[30166] = 0, -- Water Hyacinth
-[30154] = 0, -- White Cap
-[30159] = 0, -- Wormwood
 }
 
 local essence, potency, aspect =  LibLazyCrafting.getGlyphInfo()
@@ -187,31 +153,28 @@ local function getItemLinkFromItemId(itemId)
 	return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, ITEMSTYLE_NONE, 0, 10000) 
 end
 
+local function GetNumberOfAvailableItems(itemId)
+	local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(itemId))
+	return bag + bank + craft
+end
+
 local function getSolvent(proficiency, startingPosition)
 	-- Check solvents
 	for i = startingPosition , proficiency + 1 do
 		-- poisons
-		local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(solvents[i]))
-		if((bag + bank + craft) > 0) then
-			return bag + bank + craft, solvents[i], i
+		local availableAmount = GetNumberOfAvailableItems(solvents[i])
+		if(availableAmount > 0) then
+			return availableAmount, solvents[i], i
 		end
 
 		-- potions
-		local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(solvents[i+9]))
-		if((bag + bank + craft) > 0) then
-			return bag + bank + craft, solvents[i+9], i
+		local availableAmount = GetNumberOfAvailableItems(solvents[i+9])
+		if(availableAmount > 0) then
+			return availableAmount, solvents[i+9], i
 		end
 	end
 	
 	return nil, nil, nil
-end
-
-local function GetAvailableReagent(reagentId)
-	local bag, bank, craft = GetItemLinkStacks(getItemLinkFromItemId(reagentId))
-	if((bag + bank + craft) > 0) then
-		return bag + bank + craft
-	end
-	return nil
 end
 
 -- Function to find matching traits between two reagents
@@ -258,8 +221,12 @@ local function alchemyQueuer(combos)
 	
 	for i = 1, #combos do
 		local known = true
+
+		local reagentItemId1 = combos[i][1]
+		local reagentItemId2 = combos[i][2]
+
 		-- we check what traits between the two reagents are matching
-		local theoreticalMatchingTraits = GetMatchingTraits(combos[i][1], combos[i][2])
+		local theoreticalMatchingTraits = GetMatchingTraits(reagentItemId1, combos[i][2])
 		local amountMatchingReagant1 = 0
 		local amountMatchingReagant2 = 0
 		for j = 1, 4 do
@@ -268,7 +235,7 @@ local function alchemyQueuer(combos)
 				k = known status of the reagant's trait {true/false}
 				n = name of the trait, currently the name wil be nil if the trait is unknown
 			--]]
-			local k1, n1 = GetItemLinkReagentTraitInfo(getItemLinkFromItemId(combos[i][1]), j)
+			local k1, n1 = GetItemLinkReagentTraitInfo(getItemLinkFromItemId(reagentItemId1), j)
 			local k2, n2 = GetItemLinkReagentTraitInfo(getItemLinkFromItemId(combos[i][2]), j)
 
 			-- as a precaution, we'll set the name of the trait to nil if it's not known, since this is the behaviour we expect in the next step
@@ -294,7 +261,7 @@ local function alchemyQueuer(combos)
 		known = amountMatchingReagant1 == #theoreticalMatchingTraits and amountMatchingReagant2 == #theoreticalMatchingTraits
 		
 		--Leaving this here for debug purposes for now
-		 local reagantName1 = GetItemLinkName(getItemLinkFromItemId(combos[i][1]))
+		 local reagantName1 = GetItemLinkName(getItemLinkFromItemId(reagentItemId1))
 		 local reagantName2 = GetItemLinkName(getItemLinkFromItemId(combos[i][2]))
 		
 		--if unknown traits detected we will attempt to queue a potion
@@ -318,33 +285,33 @@ local function alchemyQueuer(combos)
 			local canCraftPotion = true
 			
 			-- check availability of reagant 1
-			if(reagentAmounts[combos[i][1]] == 0) then
-				reagentAmounts[combos[i][1]]  = GetAvailableReagent(combos[i][1])
+			if not reagentAmounts[reagentItemId1] then
+				reagentAmounts[reagentItemId1]  = GetNumberOfAvailableItems(reagentItemId1)
 			end
 
-			if(reagentAmounts[combos[i][1]]  == nil) then
+			if reagentAmounts[reagentItemId1] == 0 then
 				--skip this potion
 				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName1) .. " to learn all its traits.")
 				canCraftPotion = false
 			end
 			
 			-- check availability of reagant 2
-			if(reagentAmounts[combos[i][2]]) == 0 then
-				reagentAmounts[combos[i][2]]  = GetAvailableReagent(combos[i][2])
+			if not reagentAmounts[reagentItemId2] then
+				reagentAmounts[reagentItemId2]  = GetNumberOfAvailableItems(reagentItemId2)
 			end
 
-			if(reagentAmounts[combos[i][2]]  == nil) then
+			if reagentAmounts[reagentItemId2] == 0 then
 				--skip this potion
 				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName2) .. " to learn all its traits.")
 				canCraftPotion = false
 			end
 			
 			if(canCraftPotion) then
-				reagentAmounts[combos[i][1]] = reagentAmounts[combos[i][1]] - 1
-				reagentAmounts[combos[i][2]] = reagentAmounts[combos[i][2]] - 1
+				reagentAmounts[reagentItemId1] = reagentAmounts[reagentItemId1] - 1
+				reagentAmounts[reagentItemId2] = reagentAmounts[reagentItemId2] - 1
 				queued = queued + 1
 
-				LLC:CraftAlchemyItemId(solvent, combos[i][1],combos[i][2],nil, 1, true,'1')
+				LLC:CraftAlchemyItemId(solvent, reagentItemId1, reagentItemId2, nil, 1, true,'1')
 			end
 		end
 	end
@@ -400,14 +367,6 @@ end
 
 SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
 SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
-    local includeDlc = false  -- Default to false
-
-    -- Check if the argument is to include DLC
-    if arg == "all" then
-        includeDlc = true
-    end
-
-    -- Call the queueLearningAlchemy function with the parsed argument
-    queueLearningAlchemy(includeDlc)
+    queueLearningAlchemy(arg == "all")
 end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
