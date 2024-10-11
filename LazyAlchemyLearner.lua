@@ -400,14 +400,7 @@ end
 
 SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
 SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
-    local includeDlc = false  -- Default to false
-
-    -- Check if the argument is to include DLC
-    if arg == "all" then
-        includeDlc = true
-    end
-
     -- Call the queueLearningAlchemy function with the parsed argument
-    queueLearningAlchemy(includeDlc)
+    queueLearningAlchemy(arg == "all")
 end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
