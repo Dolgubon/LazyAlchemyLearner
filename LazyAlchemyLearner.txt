@@ -1,9 +1,9 @@
-﻿## APIVersion: 101038
-## Title: Lazy Alchemy Learner v1.0.4
+﻿## APIVersion: 101043
+## Title: Lazy Alchemy Learner v1.0.5
 ## Description: Learn alchemy traits quick
 ## DependsOn: LibLazyCrafting
-## Version: 1.0.4
-## Author: Dolgubon
+## Version: 1.0.5
+## Author: Dolgubon, Mathinator
 
 LazyAlchemyLearner.lua
 
