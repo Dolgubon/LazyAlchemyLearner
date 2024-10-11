@@ -367,6 +367,7 @@ end
 
 SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
 SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
+    -- Call the queueLearningAlchemy function with the parsed argument
     queueLearningAlchemy(arg == "all")
 end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
