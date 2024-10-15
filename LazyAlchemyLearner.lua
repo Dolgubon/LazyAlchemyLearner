@@ -142,12 +142,88 @@ local reagentTraits =
 [30159] = {"Weapon Critical", "Hindrance", "Detection", "Unstoppable"}, -- Wormwood
 }
 
--- used to store the calculated amount of inventory of each reagent
-local reagentAmounts = 
+-- itemId, potencyImprovementLevel
+local potencyRunes =
 {
+{45855,1}, -- Jora
+{45817,1}, -- Jode
+{45856,1}, -- Porade
+{45818,1}, -- Notade
+{45857,2}, -- Jera
+{45819,2}, -- Ode
+{45806,2}, -- Jejora
+{45820,2}, -- Tade
+{45807,3}, -- Odra
+{45821,3}, -- Jayde
+{45808,3}, -- Pojora
+{45822,3}, -- Edode,
+{45809,4}, -- Edora
+{45823,4}, -- Pojode
+{45810,4}, -- Jaera
+{45824,4}, -- Rekude
+{45811,5}, -- Pora
+{45825,5}, -- Hade
+{45812,5}, -- Denara
+{45826,5}, -- Idode
+{45813,6}, -- Rera
+{45827,6}, -- Pode
+{45814,7}, -- Derado
+{45828,7}, -- Kedeko
+{45815,8}, -- Rekura
+{45829,8}, -- Rede
+{45816,9}, -- Kura
+{45830,9}, -- Kude
+{64509,10}, -- Rejera
+{64508,10}, -- Jehade
+{68341,10}, -- Repora
+{68340,10}, -- Itade
 }
 
-local essence, potency, aspect =  LibLazyCrafting.getGlyphInfo()
+local essenceRunes =
+{
+{45839,1}, -- Dekeipa
+{45833,1}, -- Deni
+{45836,1}, -- Denima
+{45842,1}, -- Deteri
+{45841,1}, -- Haoko
+{45849,1}, -- Kaderi,
+{45837,1}, -- Kuoko
+{45848,1}, -- Makderi
+{45832,1}, -- Makko
+{45835,1}, -- Makkoma
+{45840,1}, -- Meip
+{45831,1}, -- Oko
+{45834,1}, -- Okoma
+{45843,1}, -- Okori
+{45846,1}, -- Oru
+{45838,1}, -- Rakeipa
+{45847,1}, -- Taderi
+}
+
+-- itemId, aspectImprovementLevel
+local aspectRunes =
+{
+{45850,1}, -- Ta
+{45851,1}, -- Jejota
+{45852,2}, -- Denata
+{45853,3}, -- Rekuta
+}
+
+local expensiveEssenceRunes =
+{
+{68342,1}, -- Hakejio
+{166045,1}, -- Indeko
+}
+
+local expensiveAspectRunes =
+{
+{45854,4}, -- Kuta
+}
+
+-- used to store the calculated amount of inventory of each reagent
+local materialAmounts = 
+{
+}
 
 local function getItemLinkFromItemId(itemId)
 	return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, ITEMSTYLE_NONE, 0, 10000) 
@@ -177,6 +253,52 @@ local function getSolvent(proficiency, startingPosition)
 	return nil, nil, nil
 end
 
+local function getRune(runeList, proficiency, position, allKnown)
+	-- if allKnown is false, we will get the first rune with inventory, that the player has the proficiency for and is not yet known
+	if not allKnown then
+		for i = position, #runeList do
+			local rune = runeList[i]
+			if proficiency > rune[1] then
+				break
+			end
+
+			local itemId = rune[0]
+			if not materialAmounts[itemId] then
+				materialAmounts[itemId]  = GetNumberOfAvailableItems(itemId)
+			end
+			local known, _ = GetItemLinkEnchantingRuneName(getItemLinkFromItemId(itemId))
+
+			if materialAmounts[itemId] > 0 && not known then
+				return itemId, i, allKnown
+			end
+		end
+
+	-- if we can't find any, we set allKnown to true and reset the position
+	allKnown = true
+	position = 1
+	end
+	
+	-- if all known is true we will get the first best rune with and where the player has the proficiency for
+	for i = position, #runeList do
+		local rune = runeList[i]
+		if proficiency > rune[1] then
+			break
+		end
+
+		local itemId = rune[0]
+		if not materialAmounts[itemId] then
+			materialAmounts[itemId]  = GetNumberOfAvailableItems(itemId)
+		end
+		local known, _ = GetItemLinkEnchantingRuneName(getItemLinkFromItemId(itemId))
+
+		if materialAmounts[itemId] > 0 && not known then
+			return itemId, i, allKnown
+		end
+	end
+
+	return nil, i, allknown
+end
+
 -- Function to find matching traits between two reagents
 local function GetMatchingTraits(reagent1, reagent2)
     local traits1 = reagentTraits[reagent1]
@@ -202,6 +324,19 @@ local function Contains(table, value)
         end
     end
     return false
+end
+
+function tableConcatAsNew(t1,t2)
+	local t3 = {}
+	
+	for i=1,#t1 do
+        t3[#t3+1] = t1[i]
+    end
+	
+    for i=1,#t2 do
+        t3[#t3+1] = t2[i]
+    end
+    return t3
 end
 
 local function alchemyQueuer(combos)
@@ -285,30 +420,30 @@ local function alchemyQueuer(combos)
 			local canCraftPotion = true
 			
 			-- check availability of reagant 1
-			if not reagentAmounts[reagentItemId1] then
-				reagentAmounts[reagentItemId1]  = GetNumberOfAvailableItems(reagentItemId1)
+			if not materialAmounts[reagentItemId1] then
+				materialAmounts[reagentItemId1]  = GetNumberOfAvailableItems(reagentItemId1)
 			end
 
-			if reagentAmounts[reagentItemId1] == 0 then
+			if materialAmounts[reagentItemId1] == 0 then
 				--skip this potion
 				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName1) .. " to learn all its traits.")
 				canCraftPotion = false
 			end
 			
 			-- check availability of reagant 2
-			if not reagentAmounts[reagentItemId2] then
-				reagentAmounts[reagentItemId2]  = GetNumberOfAvailableItems(reagentItemId2)
+			if not materialAmounts[reagentItemId2] then
+				materialAmounts[reagentItemId2]  = GetNumberOfAvailableItems(reagentItemId2)
 			end
 
-			if reagentAmounts[reagentItemId2] == 0 then
+			if materialAmounts[reagentItemId2] == 0 then
 				--skip this potion
 				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName2) .. " to learn all its traits.")
 				canCraftPotion = false
 			end
 			
 			if(canCraftPotion) then
-				reagentAmounts[reagentItemId1] = reagentAmounts[reagentItemId1] - 1
-				reagentAmounts[reagentItemId2] = reagentAmounts[reagentItemId2] - 1
+				materialAmounts[reagentItemId1] = materialAmounts[reagentItemId1] - 1
+				materialAmounts[reagentItemId2] = materialAmounts[reagentItemId2] - 1
 				queued = queued + 1
 
 				LLC:CraftAlchemyItemId(solvent, reagentItemId1, reagentItemId2, nil, 1, true,'1')
@@ -317,6 +452,51 @@ local function alchemyQueuer(combos)
 	end
 	return queued
 	
+end
+
+local function enchantmentQueuer(includeExpensive)
+		-- include the expensive glyphs if necessary
+		local essenceRunesToCheck = {}
+		local aspectRunesToCheck = {}
+		
+		if includeExpensive then
+			essenceRunesToCheck = tableConcatAsNew(essenceRunes, expensiveEssenceRunes)
+			aspectRunesToCheck = tableConcatAsNew(aspectRunes, expensiveAspectRunes)
+		else
+			essenceRunesToCheck = essenceRunes
+			aspectRunesToCheck = aspectRunes
+		end
+		
+		local allAspectKnown, allEssenceKnown, allPotencyKnown = false, false, false
+		local aspect, essence, potency = 0, 0, 0
+		local aspectPosition, essencePosition, potencyPosition = 1, 1, 1
+		local queued = 0
+		while true do
+			-- decide the aspect rune
+			aspect, aspectPosition, allAspectKnown = getRune(aspectRunesToCheck, GetNonCombatBonus(NON_COMBAT_BONUS_ENCHANTING_RARITY_LEVEL), aspectPosition, allAspectKnown)
+			
+			-- decide the potency rune
+			potency, potencyPosition, allPotencyKnown = getRune(potencyRunes, GetNonCombatBonus(NON_COMBAT_BONUS_ENCHANTING_LEVEL), potencyPosition, allPotencyKnown)
+			
+			-- decide the essence rune
+			essence, essencePosition, allEssenceKnown = getRune(essenceRunesToCheck, 1, essencePosition, allEssenceKnown)
+			
+			--TODO Make sure not to use the expensive runes as filler runes. They should only be used if they're unknown
+			
+			-- if atleast on of the 3 runes is nil, stop
+			if aspect == nil or essence == nil or potency == nil then
+				break
+			end
+
+			-- if all 3 runes are known, stop
+			if allAspectKnown and allEssenceKnown and allPotencyKnown then
+				break
+			end 
+			
+			-- queue glyph
+			queued = queued + 1
+			
+		end
 end
 
 -- |H1:item:75362:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
@@ -330,7 +510,8 @@ local function queueLearningAlchemy(includeDlc)
 end
 
 local function queueLearningEnchanting(includeDlc)
-	d("Not implemented yet")
+	local queued = enchantmentQueuer(includeExpensive)
+	d("Lazy Enchanting Learner: "..queued.." glyphes queued to craft")
 end
 
 function LazyAlchemyLearner.Initialize()
@@ -370,4 +551,7 @@ SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
     -- Call the queueLearningAlchemy function with the parsed argument
     queueLearningAlchemy(arg == "all")
 end
--- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
+SLASH_COMMANDS["/learnenchantrunes"] = function(args)
+	-- Call the queueLearningAlchemy function with the parsed argument
+    queueLearningEnchanting(arg == "all")
+end
