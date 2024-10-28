@@ -204,12 +204,14 @@ local function Contains(table, value)
     return false
 end
 
+
 local function alchemyQueuer(combos)
 	local LLC = LazyAlchemyLearner.LLC
 	local remainingSolvent = 0
 	local solvent
 	local position = 1
 	local queued = 0
+	local missingMaterialReagents = {}
 	-- Clear queue in case there's any already queued
 	LLC:cancelItem(CRAFTING_TYPE_ALCHEMY)
 	--I am adding a solvent check here to see if the player has any solvent at all, no need to process anything if nothing will be queued anyway
@@ -267,33 +269,27 @@ local function alchemyQueuer(combos)
 		
 		--if unknown traits detected we will attempt to queue a potion
 		if not known then
-		
+			local canCraftPotion = true
 			-- we check if there are any solvents left of the currently selected solvent, if not we automatically get the next best solvent
-			if (remainingSolvent == 0) then
+			if remainingSolvent and (remainingSolvent == 0) then
 				--decide the solvent we are going to use
 				remainingSolvent, solvent, position = getSolvent(GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL), position)
 	
 				if(remainingSolvent == nil) then
-					d("You need solvents to craft potions")
-					return queued
+					missingMaterialReagents["Solvents"] = "Solvents"
+					canCraftPotion = false
 				end
+			elseif not remainingSolvent then
+				-- ran out of solvent on a prior loop
+				canCraftPotion = false
 			end
 		
 			-- we reduce the amount of available solvents
 			remainingSolvent = remainingSolvent - 1
 			
-			-- Check if we have enough reagent available, if not we output to chat and skip the potion
-			local canCraftPotion = true
-			
 			-- check availability of reagant 1
 			if not reagentAmounts[reagentItemId1] then
 				reagentAmounts[reagentItemId1]  = GetNumberOfAvailableItems(reagentItemId1)
-			end
-
-			if reagentAmounts[reagentItemId1] == 0 then
-				--skip this potion
-				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName1) .. " to learn all its traits.")
-				canCraftPotion = false
 			end
 			
 			-- check availability of reagant 2
@@ -301,10 +297,15 @@ local function alchemyQueuer(combos)
 				reagentAmounts[reagentItemId2]  = GetNumberOfAvailableItems(reagentItemId2)
 			end
 
+			if reagentAmounts[reagentItemId1] == 0 then
+				--skip this potion
+				missingMaterialReagents[reagentItemId1] = reagantName1
+				canCraftPotion = false
+			end
 			if reagentAmounts[reagentItemId2] == 0 then
 				--skip this potion
-				d("Lazy Alchemy Learner: Not enough " .. tostring(reagantName2) .. " to learn all its traits.")
 				canCraftPotion = false
+				missingMaterialReagents[reagentItemId2] = reagantName2
 			end
 			
 			if(canCraftPotion) then
@@ -315,6 +316,14 @@ local function alchemyQueuer(combos)
 				LLC:CraftAlchemyItemId(solvent, reagentItemId1, reagentItemId2, nil, 1, true,'1')
 			end
 		end
+	end
+	for itemId, itemName in pairs(missingMaterialReagents) do
+		if type(itemId) == "number" then
+			d(zo_strformat("Lazy Alchemy Learner: You do not have enough <<1:s>> to craft all potions", getItemLinkFromItemId(itemId)))
+		end
+	end
+	if missingMaterialReagents["Solvents"] then
+		d("Lazy Alchemy Learner: You do not have any solvents, which are required for crafting potions")
 	end
 	return queued
 	
