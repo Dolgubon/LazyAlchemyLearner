@@ -210,7 +210,8 @@ local function alchemyQueuer(combos)
 	local solvent
 	local position = 1
 	local queued = 0
-	
+	-- Clear queue in case there's any already queued
+	LLC:cancelItem(CRAFTING_TYPE_ALCHEMY)
 	--I am adding a solvent check here to see if the player has any solvent at all, no need to process anything if nothing will be queued anyway
 	remainingSolvent, solvent, position = getSolvent(GetNonCombatBonus(NON_COMBAT_BONUS_ALCHEMY_LEVEL), position)
 	
@@ -349,6 +350,12 @@ local function genericSlashCommand(args)
 	local searchResult = { string.match(args,"^(%S*)%s*(.-)$") }
 	if searchResult[1] == 'alchemy' then
 		queueLearningAlchemy(searchResult[2] == 'all')
+		if searchResult[2] == 'all' then
+			d("DLC + Base game alchemy traits queued")
+		else
+			d("Base game alchemy traits queued. Type /lazylearn all to also learn DLC traits")
+		end
+		
 	elseif searchResult[1] == 'enchant' then
 		queueLearningEnchanting(searchResult[2] == 'all')
 	elseif searchResult[1] == 'both' then
@@ -369,5 +376,10 @@ SLASH_COMMANDS['/lazylearn'] = genericSlashCommand
 SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
     -- Call the queueLearningAlchemy function with the parsed argument
     queueLearningAlchemy(arg == "all")
+    if arg == 'all' then
+		d("DLC + Base game alchemy traits queued")
+	else
+		d("Base game alchemy traits queued. Type /lazylearn all to also learn DLC traits")
+	end
 end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
