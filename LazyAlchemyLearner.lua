@@ -362,7 +362,7 @@ local function genericSlashCommand(args)
 		if searchResult[2] == 'all' then
 			d("DLC + Base game alchemy traits queued")
 		else
-			d("Base game alchemy traits queued. Type /lazylearn all to also learn DLC traits")
+			d("Base game alchemy traits queued. Type /lazylearn alchemy all to also learn DLC traits")
 		end
 		
 	elseif searchResult[1] == 'enchant' then
@@ -388,7 +388,7 @@ SLASH_COMMANDS["/learnalchemytraits"] = function(arg)
     if arg == 'all' then
 		d("DLC + Base game alchemy traits queued")
 	else
-		d("Base game alchemy traits queued. Type /lazylearn all to also learn DLC traits")
+		d("Base game alchemy traits queued. Type /learnalchemytraits all to also learn DLC traits")
 	end
 end
 -- SLASH_COMMANDS["/learnenchantrunes"] = queueLearningAlchemy
