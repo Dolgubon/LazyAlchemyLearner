@@ -314,6 +314,7 @@ local function alchemyQueuer(combos)
 				queued = queued + 1
 
 				LLC:CraftAlchemyItemId(solvent, reagentItemId1, reagentItemId2, nil, 1, true,'1')
+				d("Lazy Alchemy Learner: Queued " .. getItemLinkFromItemId(solvent) .. " with " .. getItemLinkFromItemId(reagentItemId1) .. " and " .. getItemLinkFromItemId(reagentItemId2) .. ".")
 			end
 		end
 	end
