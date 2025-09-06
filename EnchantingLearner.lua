@@ -144,6 +144,11 @@ end
 --- @param usedIds table A table of rune IDs that have already been used.
 --- @return runeId Id of the chosen rune to use
 local function getNextRune(runeTable, usedIds, instockRunes)
+    local excludedBackupRunes = {
+        [45854] = 1,
+        [166045] = 1,
+        [68342] = 1,
+    }
     local maxId, maxCount = nil, -1
     for id, count in pairs(instockRunes) do
         -- d("Checking rune: " .. Utils.getItemLinkFromItemId(id))
@@ -151,11 +156,12 @@ local function getNextRune(runeTable, usedIds, instockRunes)
             -- d("Return learnable rune: " .. Utils.getItemLinkFromItemId(id))
             return id
         end
-        if count > maxCount then
+        if count > maxCount and not excludedBackupRunes[id] then
             maxId, maxCount = id, count
         end
     end
-    -- If all runes have been used, return the one with the highest count
+
+    -- If all runes have been used, return the one with the highest count, excluding hakeijo, kuta, and indeko
     if maxId and maxCount > 0 then
         -- d("Return max rune: " .. Utils.getItemLinkFromItemId(maxId))
         return maxId
