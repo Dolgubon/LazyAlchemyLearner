@@ -1,4 +1,4 @@
-LazyLearner.EnchantingLearner = EnchantingLearner or {}
+LazyLearner.EnchantingLearner = LazyLearner.EnchantingLearner or {}
 local Utils = LazyLearner.Utils
 local EnchantingLearner = LazyLearner.EnchantingLearner
 local AlchemyLearner = LazyLearner.AlchemyLearner
