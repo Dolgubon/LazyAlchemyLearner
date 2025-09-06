@@ -12,6 +12,8 @@ LazyLearner.strings = {
     LL_CHOOSE_ALCHEMY_TRAITS = "Choose which alchemy traits to learn",
     LL_BASE_GAME_TRAITS = "Base Game Traits",
     LL_ALL_TRAITS = "All Traits",
+    LL_QUEUE_ALCHEMY = "Queue Alchemy",
+    LL_QUEUE_ENCHANTING = "Queue Enchanting",
     LL_QUEUE = "Queue Learning",
     LL_QUEUE_TRAITS = "Queue up a selection of poisons/poisons to create when you visit an alchemy station in order to learn the ingredient traits.",
     LL_VISIT_ALCHEMY_STATION = "Visit an Alchemy Station to learn queued alchemy traits",
@@ -42,6 +44,7 @@ LazyLearner.strings = {
     LL_ENCHANTING_MISSING_ASPECT = "You are missing the following Aspect Runes: ",
     LL_CANCEL = "Clear Queues",
     LL_CANCEL_TOOLTIP = "Completely clear the enchanting and alchemy queue of all items",
+    LL_QUEUE_CLEARED = "Alchemy and enchanting queues cleared",
     LL_LAZY_LEARNER = "Lazy Learner",
     LL_LAZYLEARNER = "LazyLearner"
 }

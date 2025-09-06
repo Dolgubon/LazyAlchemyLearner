@@ -71,6 +71,35 @@ EnchantingLearner.aspect = {
     [45854] = 4 -- Kuta
 }
 
+--- Find an unused rune, or the one with the highest count if all are used
+--- @param runeTable table A table of rune IDs and their available amounts.
+--- @param usedIds table A table of rune IDs that have already been used.
+--- @return runeId Id of the chosen rune to use
+local function getNextRune(runeTable, usedIds, instockRunes)
+    local excludedBackupRunes = {
+        [45854] = 1,
+        [166045] = 1,
+        [68342] = 1,
+    }
+    local maxId, maxCount = nil, -1
+    for id, count in pairs(instockRunes) do
+        -- d("Checking rune: " .. Utils.getItemLinkFromItemId(id))
+        if runeTable[id] and not usedIds[id] and count > 0 then
+            -- d("Return learnable rune: " .. Utils.getItemLinkFromItemId(id))
+            return id
+        end
+        if count > maxCount and not excludedBackupRunes[id] then
+            maxId, maxCount = id, count
+        end
+    end
+
+    -- If all runes have been used, return the one with the highest count, excluding hakeijo, kuta, and indeko
+    if maxId and maxCount > 0 then
+        -- d("Return max rune: " .. Utils.getItemLinkFromItemId(maxId))
+        return maxId
+    end
+    return nil
+end
 
 -- Craft glyphs to learn as many rune traits as possible and add them to the Lazy Lib Crafter queue
 --- @param LLC the LibLazyCrafting instance
@@ -137,36 +166,6 @@ local function craftAllCombinations(LLC, learnablePotencyRunes, learnableEssence
         end
     end
     return amountQueued, potencyMissing, essenceMissing, aspectMissing
-end
-
---- Find an unused rune, or the one with the highest count if all are used
---- @param runeTable table A table of rune IDs and their available amounts.
---- @param usedIds table A table of rune IDs that have already been used.
---- @return runeId Id of the chosen rune to use
-local function getNextRune(runeTable, usedIds, instockRunes)
-    local excludedBackupRunes = {
-        [45854] = 1,
-        [166045] = 1,
-        [68342] = 1,
-    }
-    local maxId, maxCount = nil, -1
-    for id, count in pairs(instockRunes) do
-        -- d("Checking rune: " .. Utils.getItemLinkFromItemId(id))
-        if runeTable[id] and not usedIds[id] and count > 0 then
-            -- d("Return learnable rune: " .. Utils.getItemLinkFromItemId(id))
-            return id
-        end
-        if count > maxCount and not excludedBackupRunes[id] then
-            maxId, maxCount = id, count
-        end
-    end
-
-    -- If all runes have been used, return the one with the highest count, excluding hakeijo, kuta, and indeko
-    if maxId and maxCount > 0 then
-        -- d("Return max rune: " .. Utils.getItemLinkFromItemId(maxId))
-        return maxId
-    end
-    return nil
 end
 
 --- Queue learning of enchanting runes based on available runes in inventory
