@@ -1,4 +1,7 @@
-AlchemyLearner = AlchemyLearner or {}
+LazyLearner.AlchemyLearner = AlchemyLearner or {}
+local Utils = LazyLearner.Utils
+local EnchantingLearner = LazyLearner.EnchantingLearner
+local AlchemyLearner = LazyLearner.AlchemyLearner
 
 --- List of all reagent combinations in ESO (using the reagent IDs) that can results in learning the base game traits
 AlchemyLearner.basegameCombo = {

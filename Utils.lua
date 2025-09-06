@@ -1,4 +1,7 @@
-Utils = Utils or {}
+LazyLearner.Utils = LazyLearner.Utils or {}
+local Utils = LazyLearner.Utils
+local EnchantingLearner = LazyLearner.EnchantingLearner
+local AlchemyLearner = LazyLearner.AlchemyLearner
 
 --- func description: Prints the contents of a table or other object.
 --- @param obj any The object to print.

@@ -1,7 +1,7 @@
 LazyLearner = LazyLearner or {}
-LazyLearner.name = "LazyLearner"
+LazyLearner.name = "LazyAlchemyLearner"
 LazyLearner.version = "1.0.0"
-LazyLearner.author = "Dolgubon, msetten, Mathinator"
+LazyLearner.author = "Dolgubon (PC), msetten (Console), Mathinator (Contributing)"
 LazyLearner.displayName = LazyLearner.L("LL_LAZY_LEARNER")
 LazyLearner.selectedTraitOption = LAZY_LEARNER_ALCHEMY_BASE_GAME
 LazyLearner.selectedRunesOption = LAZY_LEARNER_ENCHANTING_BASE_GAME
@@ -10,6 +10,9 @@ LAZY_LEARNER_ALCHEMY_BASE_GAME = 1
 LAZY_LEARNER_ALCHEMY_ALL_TRAITS = 2
 LAZY_LEARNER_ENCHANTING_BASE_GAME = 1
 LAZY_LEARNER_ENCHANTING_ALL_RUNES = 2
+local Utils = LazyLearner.Utils
+local EnchantingLearner = LazyLearner.EnchantingLearner
+local AlchemyLearner = LazyLearner.AlchemyLearner
 
 --- Creates the settings panel in the ESO interface add-on options.
 function LazyLearner.setupPanel()

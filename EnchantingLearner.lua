@@ -1,4 +1,7 @@
-EnchantingLearner = EnchantingLearner or {}
+LazyLearner.EnchantingLearner = EnchantingLearner or {}
+local Utils = LazyLearner.Utils
+local EnchantingLearner = LazyLearner.EnchantingLearner
+local AlchemyLearner = LazyLearner.AlchemyLearner
 
 --- List of all potency rune IDs in ESO, sorted by required enchanting proficiency
 EnchantingLearner.potency = {

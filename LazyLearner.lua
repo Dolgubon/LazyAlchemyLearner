@@ -1,4 +1,7 @@
 LazyLearner = LazyLearner or {}
+local Utils = LazyLearner.Utils
+local EnchantingLearner = LazyLearner.EnchantingLearner
+local AlchemyLearner = LazyLearner.AlchemyLearner
 
 -- The default for the account-wide settings
 LazyLearner.defaults = {
