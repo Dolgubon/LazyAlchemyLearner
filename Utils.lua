@@ -3,27 +3,6 @@ local Utils = LazyLearner.Utils
 local EnchantingLearner = LazyLearner.EnchantingLearner
 local AlchemyLearner = LazyLearner.AlchemyLearner
 
---- func description: Prints the contents of a table or other object.
---- @param obj any The object to print.
---- @return string A string representation of the object.
-function Utils.PrintObject(obj)
-    if type(obj) == "table" then
-        local result = "{ "
-        for k, v in pairs(obj) do
-            if v and type(v) == "table" then
-                local w = self:PrintObject(v) -- Recursive call to handle nested tables
-                result = result .. tostring(k) .. ": " .. tostring(w) .. ", " -- Recursively print nested tables
-            else
-                result = result .. tostring(k) .. ": " .. tostring(v) .. ", "
-            end
-        end
-        result = result .. " }"
-        return result
-    else
-        return tostring(obj)
-    end
-end
-
 --- Converts RGB values to a hexadecimal color string.
 --- This function takes RGB values in the range 0–1 and converts them to a hexadecimal color string.
 --- @param r The red component (0–1).
