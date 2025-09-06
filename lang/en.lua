@@ -40,6 +40,8 @@ LazyLearner.strings = {
     LL_ENCHANTING_MISSING_POTENCY = "You are missing the following Potency Runes: ",
     LL_ENCHANTING_MISSING_ESSENCE = "You are missing the following Essence Runes: ",
     LL_ENCHANTING_MISSING_ASPECT = "You are missing the following Aspect Runes: ",
+    LL_CANCEL = "Clear Queues",
+    LL_CANCEL_TOOLTIP = "Completely clear the enchanting and alchemy queue of all items",
     LL_LAZY_LEARNER = "Lazy Learner",
     LL_LAZYLEARNER = "LazyLearner"
 }

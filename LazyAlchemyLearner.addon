@@ -1,8 +1,8 @@
-﻿## Title: Lazy Learner v1.0.8
+﻿## Title: Lazy Learner v1.1.0
 ## APIVersion: 101047
 ## Author: Dolgubon (PC), msetten (Console), Mathinator (Contributing)
-## Version: 1.0.8
-## AddOnVersion: 108
+## Version: 1.1.0
+## AddOnVersion: 110
 ## DependsOn: LibLazyCrafting LibAddonMenu-2.0 LibChatMessage
 ## SavedVariables: LazyLearnerSavedVars
 ## Description: Learn alchemy traits and enchanting runes quickly

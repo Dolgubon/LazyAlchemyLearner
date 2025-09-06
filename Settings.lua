@@ -1,6 +1,6 @@
 LazyLearner = LazyLearner or {}
 LazyLearner.name = "LazyAlchemyLearner"
-LazyLearner.version = "1.0.0"
+LazyLearner.version = "1.1.0"
 LazyLearner.author = "Dolgubon (PC), msetten (Console), Mathinator (Contributing)"
 LazyLearner.displayName = LazyLearner.L("LL_LAZY_LEARNER")
 LazyLearner.selectedTraitOption = LAZY_LEARNER_ALCHEMY_BASE_GAME
@@ -73,6 +73,13 @@ function LazyLearner.setupPanel()
         default = LazyLearner.defaults.warningColor,
         width = "half"
     }, {
+        type = "button",
+        name = LazyLearner.L("LL_CANCEL"),
+        tooltip = LazyLearner.L("LL_CANCEL_TOOLTIP"),
+        func = function()
+            LazyLearner.LLC:cancelItem()
+        end
+    }, {
         type = "divider",
         reference = "LazyLearnerExtensiveReportingDivider"
     }, {
@@ -88,6 +95,9 @@ function LazyLearner.setupPanel()
             LazyLearner.selectedTraitOption = value
         end,
         default = LAZY_LEARNER_ALCHEMY_BASE_GAME
+    }, {
+        type = "divider",
+        reference = "LazyLearnerDivider"
     }, {
         type = "button",
         name = LazyLearner.L("LL_QUEUE"),

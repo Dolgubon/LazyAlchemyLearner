@@ -67,7 +67,7 @@ end
 --- @param value The value to search for
 --- @return boolean True if the value is found, false otherwise
 function Utils.Contains(table, value)
-    for _, v in ipairs(table) do
+    for _, v in pairs(table) do
         if v == value then
             return true
         end
