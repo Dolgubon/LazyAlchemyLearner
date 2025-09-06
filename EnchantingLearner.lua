@@ -71,6 +71,98 @@ EnchantingLearner.aspect = {
     [45854] = 4 -- Kuta
 }
 
+
+-- Craft glyphs to learn as many rune traits as possible and add them to the Lazy Lib Crafter queue
+--- @param LLC the LibLazyCrafting instance
+--- @param learnablePotencyRunes table of all potency runes that must be learned and their amounts in stock
+--- @param learnableEssenceRunes table of all essence runes that must be learned and their amounts in stock
+--- @param learnableAspectRunes table of all aspect runes that must be learned and their amounts in stock
+--- @return amountQueued number of glyphs queued to craft
+--- @return missingPotencyRunes if there was a shortage of potency runes to learn all rune traits
+--- @return missingEssenceRunes if there was a shortage of essence runes to learn all rune traits
+--- @return missingAspectRunes if there was a shortage of aspect runes to learn all rune traits
+local function craftAllCombinations(LLC, learnablePotencyRunes, learnableEssenceRunes, learnableAspectRunes,
+    potencyRunesStock, essenceRunesStock, aspectRunesStock)
+    local usedPotency, usedEssence, usedAspect = {}, {}, {}
+    local potencyIds, essenceIds, aspectIds = {}, {}, {}
+    local potencyMissing, essenceMissing, aspectMissing = false, false, false
+
+    for id in pairs(learnablePotencyRunes) do
+        table.insert(potencyIds, id)
+    end
+    for id in pairs(learnableEssenceRunes) do
+        table.insert(essenceIds, id)
+    end
+    for id in pairs(learnableAspectRunes) do
+        table.insert(aspectIds, id)
+    end
+
+    local amountQueued = 0
+
+    local maxLen = math.max(#potencyIds, #essenceIds, #aspectIds)
+    for i = 1, maxLen do
+        -- d("Find potency rune")
+        local potencyId = getNextRune(learnablePotencyRunes, usedPotency, potencyRunesStock)
+        -- d("Find essence rune")
+        local essenceId = getNextRune(learnableEssenceRunes, usedEssence, essenceRunesStock)
+        -- d("Find aspect rune")
+        local aspectId = getNextRune(learnableAspectRunes, usedAspect, aspectRunesStock)
+
+        if not potencyId then
+            potencyMissing = true
+        end
+        if not essenceId then
+            essenceMissing = true
+        end
+        if not aspectId then
+            aspectMissing = true
+        end
+
+        if potencyId and essenceId and aspectId then
+            LLC:CraftEnchantingItemId(potencyId, essenceId, aspectId, true, "", {}, 1)
+            amountQueued = amountQueued + 1
+            if LazyLearner.savedVars.extensiveReporting then
+                Utils.sendChatMessage(string.format(LazyLearner.L("LL_QUEUED_ITEM"),
+                    Utils.getItemLinkFromItemId(potencyId), Utils.getItemLinkFromItemId(essenceId),
+                    Utils.getItemLinkFromItemId(aspectId)))
+            end
+
+            usedPotency[potencyId] = true
+            usedEssence[essenceId] = true
+            usedAspect[aspectId] = true
+
+            potencyRunesStock[potencyId] = potencyRunesStock[potencyId] - 1
+            essenceRunesStock[essenceId] = essenceRunesStock[essenceId] - 1
+            aspectRunesStock[aspectId] = aspectRunesStock[aspectId] - 1
+        end
+    end
+    return amountQueued, potencyMissing, essenceMissing, aspectMissing
+end
+
+--- Find an unused rune, or the one with the highest count if all are used
+--- @param runeTable table A table of rune IDs and their available amounts.
+--- @param usedIds table A table of rune IDs that have already been used.
+--- @return runeId Id of the chosen rune to use
+local function getNextRune(runeTable, usedIds, instockRunes)
+    local maxId, maxCount = nil, -1
+    for id, count in pairs(instockRunes) do
+        -- d("Checking rune: " .. Utils.getItemLinkFromItemId(id))
+        if runeTable[id] and not usedIds[id] and count > 0 then
+            -- d("Return learnable rune: " .. Utils.getItemLinkFromItemId(id))
+            return id
+        end
+        if count > maxCount then
+            maxId, maxCount = id, count
+        end
+    end
+    -- If all runes have been used, return the one with the highest count
+    if maxId and maxCount > 0 then
+        -- d("Return max rune: " .. Utils.getItemLinkFromItemId(maxId))
+        return maxId
+    end
+    return nil
+end
+
 --- Queue learning of enchanting runes based on available runes in inventory
 --- @param includeDlc boolean Whether to include DLC runes (Hakeijo and Indeko)
 --- @param includeKuta boolean Whether to include Kuta rune 
@@ -160,96 +252,6 @@ function EnchantingLearner.queueLearningEnchanting(includeDlc, includeKuta)
         instockEssenceRunes[166045] = nil
     end
 
-    --- Find an unused rune, or the one with the highest count if all are used
-    --- @param runeTable table A table of rune IDs and their available amounts.
-    --- @param usedIds table A table of rune IDs that have already been used.
-    --- @return runeId Id of the chosen rune to use
-    local function getNextRune(runeTable, usedIds, instockRunes)
-        local maxId, maxCount = nil, -1
-        for id, count in pairs(instockRunes) do
-            -- d("Checking rune: " .. Utils.getItemLinkFromItemId(id))
-            if runeTable[id] and not usedIds[id] and count > 0 then
-                -- d("Return learnable rune: " .. Utils.getItemLinkFromItemId(id))
-                return id
-            end
-            if count > maxCount then
-                maxId, maxCount = id, count
-            end
-        end
-        -- If all runes have been used, return the one with the highest count
-        if maxId and maxCount > 0 then
-            -- d("Return max rune: " .. Utils.getItemLinkFromItemId(maxId))
-            return maxId
-        end
-        return nil
-    end
-
-    --- Craft glyphs to learn as many rune traits as possible and add them to the Lazy Lib Crafter queue
-    --- @param LLC the LibLazyCrafting instance
-    --- @param learnablePotencyRunes table of all potency runes that must be learned and their amounts in stock
-    --- @param learnableEssenceRunes table of all essence runes that must be learned and their amounts in stock
-    --- @param learnableAspectRunes table of all aspect runes that must be learned and their amounts in stock
-    --- @return amountQueued number of glyphs queued to craft
-    --- @return missingPotencyRunes if there was a shortage of potency runes to learn all rune traits
-    --- @return missingEssenceRunes if there was a shortage of essence runes to learn all rune traits
-    --- @return missingAspectRunes if there was a shortage of aspect runes to learn all rune traits
-    local function craftAllCombinations(LLC, learnablePotencyRunes, learnableEssenceRunes, learnableAspectRunes,
-        potencyRunesStock, essenceRunesStock, aspectRunesStock)
-        local usedPotency, usedEssence, usedAspect = {}, {}, {}
-        local potencyIds, essenceIds, aspectIds = {}, {}, {}
-        local potencyMissing, essenceMissing, aspectMissing = false, false, false
-
-        for id in pairs(learnablePotencyRunes) do
-            table.insert(potencyIds, id)
-        end
-        for id in pairs(learnableEssenceRunes) do
-            table.insert(essenceIds, id)
-        end
-        for id in pairs(learnableAspectRunes) do
-            table.insert(aspectIds, id)
-        end
-
-        local amountQueued = 0
-
-        local maxLen = math.max(#potencyIds, #essenceIds, #aspectIds)
-        for i = 1, maxLen do
-            -- d("Find potency rune")
-            local potencyId = getNextRune(learnablePotencyRunes, usedPotency, potencyRunesStock)
-            -- d("Find essence rune")
-            local essenceId = getNextRune(learnableEssenceRunes, usedEssence, essenceRunesStock)
-            -- d("Find aspect rune")
-            local aspectId = getNextRune(learnableAspectRunes, usedAspect, aspectRunesStock)
-
-            if not potencyId then
-                potencyMissing = true
-            end
-            if not essenceId then
-                essenceMissing = true
-            end
-            if not aspectId then
-                aspectMissing = true
-            end
-
-            if potencyId and essenceId and aspectId then
-                LLC:CraftEnchantingItemId(potencyId, essenceId, aspectId, true, "", {}, 1)
-                amountQueued = amountQueued + 1
-                if LazyLearner.savedVars.extensiveReporting then
-                    Utils.sendChatMessage(string.format(LazyLearner.L("LL_QUEUED_ITEM"),
-                        Utils.getItemLinkFromItemId(potencyId), Utils.getItemLinkFromItemId(essenceId),
-                        Utils.getItemLinkFromItemId(aspectId)))
-                end
-
-                usedPotency[potencyId] = true
-                usedEssence[essenceId] = true
-                usedAspect[aspectId] = true
-
-                potencyRunesStock[potencyId] = potencyRunesStock[potencyId] - 1
-                essenceRunesStock[essenceId] = essenceRunesStock[essenceId] - 1
-                aspectRunesStock[aspectId] = aspectRunesStock[aspectId] - 1
-            end
-        end
-        return amountQueued, potencyMissing, essenceMissing, aspectMissing
-    end
 
     local result = false
     if learnablePotencyRunes or learnableAspectRunes or learnableEssenceRunes then
