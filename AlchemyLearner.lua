@@ -339,7 +339,7 @@ function AlchemyLearner.queueLearningAlchemy(includeDlc)
 
     local freeSlots = GetNumBagFreeSlots(BAG_BACKPACK)
     if queued > freeSlots then
-        Utils.sendChatMessage(string.format(LazyLearner.L("LL_BAG_WARNING"), freeSlots, queued, freeSlots),
+        Utils.sendChatMessage(string.format(LazyLearner.L("LL_BAG_WARNING"), queued, freeSlots),
             Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
     end
     return queued > 0

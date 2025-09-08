@@ -1,6 +1,6 @@
 LazyLearner = LazyLearner or {}
 LazyLearner.name = "LazyAlchemyLearner"
-LazyLearner.version = "1.1.0"
+LazyLearner.version = "1.1.1"
 LazyLearner.author = "Dolgubon (PC), msetten (Console), Mathinator (Contributing)"
 LazyLearner.displayName = LazyLearner.L("LL_LAZY_LEARNER")
 LazyLearner.selectedTraitOption = LAZY_LEARNER_ALCHEMY_BASE_GAME
