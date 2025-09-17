@@ -226,9 +226,10 @@ function AlchemyLearner.alchemyQueuer(combos)
 				k = known status of the reagant's trait {true/false}
 				n = name of the trait, currently the name wil be nil if the trait is unknown
 			--]]
-            local k1, n1 = GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(reagentItemId1), j)
-            local k2, n2 = GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(reagentItemId2), j)
-
+            local k1 = GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(reagentItemId1), j)
+            local k2 = GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(reagentItemId2), j)
+            local n1 = AlchemyLearner.reagentTraits[reagentItemId1][j]
+            local n2 = AlchemyLearner.reagentTraits[reagentItemId2][j]
             -- as a precaution, we'll set the name of the trait to nil if it's not known, since this is the behaviour we expect in the next step
             if not k1 then
                 n1 = nil

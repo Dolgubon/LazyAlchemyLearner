@@ -70,6 +70,10 @@ function Utils.sendChatMessage(msg, color)
     if not color then
         color = Utils.RGBColorToHex(LazyLearner.savedVars.msgcolor)
     end
+    if not LibChatMessage then
+        CHAT_ROUTER:AddSystemMessage("|c" .. color .. msg .. "|r ")
+        return
+    end
     local chat = LibChatMessage(LazyLearner.L("LL_LAZYLEARNER"), LazyLearner.L("LL_LAZYLEARNER"))
     LibChatMessage:SetTagPrefixMode(TAG_PREFIX_SHORT)
     chat:SetTagColor(color):Print("|c" .. color .. msg .. "|r ")
