@@ -3,83 +3,232 @@ local Utils = LazyLearner.Utils
 local EnchantingLearner = LazyLearner.EnchantingLearner
 local AlchemyLearner = LazyLearner.AlchemyLearner
 
---- List of all reagent combinations in ESO (using the reagent IDs) that can results in learning the base game traits
-AlchemyLearner.basegameCombo = {
-{77583, 77591}, -- Beetle Scuttle & Mudcrab Chitin
-{77583, 77585}, -- Beetle Scuttle & Butterfly Wing
-{77583, 30152}, -- Beetle Scuttle & Violet Coprinus
-{30157, 30153}, -- Blessed Thistle & Namira's Rot
-{30148, 30154}, -- Blue Entoloma & White Cap
-{30148, 77585}, -- Blue Entoloma & Butterfly Wing
-{30148, 30165}, -- Blue Entoloma & Nirnroot
-{30160, 30154}, -- Bugloss & White Cap
-{30164, 30160}, -- Columbine & Bugloss
-{30164, 30159}, -- Columbine & Wormwood
-{30164, 30157}, -- Columbine & Blessed Thistle
-{30161, 30154}, -- Corn Flower & White Cap
-{30161, 30157}, -- Corn Flower & Blessed Thistle
-{30162, 30149}, -- Dragonthorn & Stinkhorn
-{30162, 30157}, -- Dragonthorn & Blessed Thistle
-{30162, 30166}, -- Dragonthorn & Water Hyacinth
-{30151, 30166}, -- Emetic Russula & Water Hyacinth
-{30151, 30152}, -- Emetic Russula & Violet Coprinus
-{30151, 30155}, -- Emetic Russula & Luminous Russula
-{77587, 77581}, -- Fleshfly Larva & Torchbug Thorax
-{77587, 77589}, -- Fleshfly Larva & Scrib Jelly
-{77587, 30156}, -- Fleshfly Larva & Imp Stool
-{77587, 77590}, -- Fleshfly Larva & Nightshade
-{30156, 30163}, -- Imp Stool & Mountain Flower
-{30156, 30165}, -- Imp Stool & Nirnroot
-{30158, 30152}, -- Lady's Smock & Violet Coprinus
-{30158, 30161}, -- Lady's Smock & Corn Flower
-{30158, 30166}, -- Lady's Smock & Water Hyacinth
-{30155, 30163}, -- Luminous Russula & Mountain Flower
-{30155, 77584}, -- Luminous Russula & Spider Egg
-{30163, 30157}, -- Mountain Flower & Blessed Thistle
-{77591, 77590}, -- Mudcrab Chitin & Nightshade
-{77591, 30154}, -- Mudcrab Chitin & White Cap
-{30153, 30159}, -- Namira’s Rot & Wormwood
-{30153, 30166}, -- Namira’s Rot & Water Hyacinth
-{77590, 30165}, -- Nightshade & Nirnroot
-{30165, 77585}, -- Nirnroot & Butterfly Wing
-{77589, 77584}, -- Scrib Jelly & Spider Egg
-{77589, 30157}, -- Scrib Jelly & Blessed Thistle
-{77589, 30154}, -- Scrib Jelly & White Cap
-{30159, 77584}, -- Wormwood & Spider Egg
-{77584, 77591}, -- Spider Egg & Mudcrab Chitin
-{30149, 30151}, -- Stinkhorn & Emetic Russula
-{77581, 30159}, -- Torchbug Thorax & Wormwood
-{77581, 30165}, -- Torchbug Thorax & Nirnroot
-{77581, 30149}, -- Torchbug Thorax & Stinkhorn
-{30166, 30155}, -- Water Hyacinth & Luminous Russula
-{30159, 30166}, -- Wormwood & Water Hyacinth
-{77585, 77584}, -- Butterfly Wing & Spider Egg
-{30153, 30165}, -- Namira’s Rot & Nirnroot
-{77584, 30165} -- Spider Egg & Nirnroot
+
+-- rules for negative trait learning:
+-- Only if it's a 3 reagent potion, with two matching the positive. Then you learn the negative
+-- Both positive traits do not need to be known
+-- potion has to be created
+local defaultPrices = {
+    [77583] = 80 ,
+    [30157] = 60,
+    [30148] = 30,
+    [30160] = 200,
+    [77585] = 60, -- Butterfly Wing
+    [150669] = 380,
+    [139020] = 300, 
+    [30164] = 900,
+    [30161] = 80,
+    [150672] = 125, -- Crimson Nirnroot
+    [150789] = 99,
+    [150731] = 2300,
+    [150671] = 2200, -- Dragon Rheum
+    [30162] = 60, -- dragonthorn
+    [30151] = 60,
+    [77587] = 45,
+    [30156] = 60,
+    [30158] = 60, -- lady's smock
+    [30155] = 70,
+    [30163] = 160,
+    [77591] = 540,
+    [30153] = 50,
+    [77590] = 80,
+    [30165] = 40, -- Nirnroot
+    [139019] = 930,
+    [77589] = 250,
+    [77584] = 60, -- Spider Egg
+    [30149] = 70, -- Stinkhorn
+    [77581] = 590, -- Torchbug Thorax
+    [150670] = 200,
+    [30152] = 450, 
+    [30166] = 45, -- water hyacinth
+    [30154] = 36,
+    [30159] = 52, -- Wormwood
+    -- new with update 51 - no idea what the prices will be, so we'll just price it out of algo for now
+    [224357] = 5000, -- Cultivated Cryptpot
+    [224358] = 5000,
+    [224359] = 5000,
+    [224360] = 5000,
 }
 
---- List of all reagent combinations in ESO (using the reagent IDs) that can results in learning the DLC traits
-AlchemyLearner.dlcCombos = {
-{139019, 77583}, -- Powdered Mother of Pearl & Beetle Scuttle
-{139019, 77589}, -- Powdered Mother of Pearl & Scrib Jelly
-{139020, 77591}, -- Clam Gall & Mudcrab Chitin	
-{139020, 77584}, -- Clam Gall & Spider Egg
-{139020, 77587}, -- Clam Gall & Fleshfly Larva
-{150731, 77584}, -- Dragon's Blood & Spider Egg
-{150731, 150789}, -- Dragon's Blood & Dragon's Bile
-{150731, 150669}, -- Dragon's Blood & Chaurus Egg
-{150671, 150789}, -- Dragon Rheum & Dragon's Bile
-{150671, 77581}, -- Dragon Rheum & Torchbug Thorax
-{150671, 150670}, -- Dragon Rheum & Vile Coagulant
-{150671, 30153}, -- Dragon Rheum & Namira’s Rot
-{150789, 77587}, -- Dragon's Bile & Fleshfly Larva
-{150789, 77584}, -- Dragon's Bile & Spider Egg
-{150670, 77590}, -- Vile Coagulant & Nightshade
-{150670, 150669}, -- Vile Coagulant & Chaurus Egg
-{150669, 30154}, -- Chaurus Egg & White Cap
-{150669, 150672}, -- Chaurus Egg & Crimson Nirnroot
-{150672, 30166}, -- Crimson Nirnroot & Water Hyacinth
-{150672, 77587} -- Crimson Nirnroot & Fleshfly Larva
+local function populatePrices()
+    if LibPrice then
+        for k, v in pairs(defaultPrices) do
+            local price, source = LibPrice.ItemLinkToPriceGold(Utils.getItemLinkFromItemId(k))
+            if source ~= "npc" and price and price>0 then
+                defaultPrices[k] = price
+            end
+        end
+    end
+end
+
+local function populateExpectedKnownTraits()
+    local workingTable = {}
+    for k, v in pairs(AlchemyLearner.reagentTraits) do
+        workingTable[k] = {}
+        for i = 1, 4 do
+            workingTable[k][v[i]] = GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(k), i)
+        end
+    end
+    return workingTable
+end
+-- local expectedKnown
+
+local function doesReagentHaveTrait(itemId, traitName)
+    local effects = AlchemyLearner.reagentTraits[itemId]
+    for i = 1, 4 do
+        if effects[i] == traitName then
+            return i
+        end
+    end
+    return nil
+    -- GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(reagentItemId1), j)
+end
+
+local function doesUserKnowReagentTrait(itemId, traitName)
+    local traitIndex = doesReagentHaveTrait(itemId, traitName)
+    if not traitIndex then return false end
+
+    return GetItemLinkReagentTraitInfo(Utils.getItemLinkFromItemId(itemId), traitIndex)
+end
+
+local function isTraitExpectedKnown(itemId, traitName)
+    return expectedKnown[itemId][traitName]
+end
+
+local reagentInfo = WritCreater.reagentInfo
+local function calcOverlap(r1,r2)
+    local reagentItemId1 = r1[1]
+    local reagentItemId2 = r2[1]
+    local effects = {}
+    for i =1, 4 do
+        effects[AlchemyLearner.reagentTraits[reagentItemId1][i]] = (effects[AlchemyLearner.reagentTraits[reagentItemId1][i]] or 0 ) + 1
+        effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] = (effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] or 0 ) + 1
+    end
+    for k, v in pairs(effects) do
+        if v==1 then
+            effects[k] = nil
+        end
+    end
+    local output = {}
+    local totalLearnable = 0
+    for k , v in pairs(effects) do
+        output[#output+1] = k
+        if not isTraitExpectedKnown(reagentItemId1, k) then
+            totalLearnable = totalLearnable + 1
+        end
+        if not isTraitExpectedKnown(reagentItemId2, k) then
+            totalLearnable = totalLearnable + 1
+        end
+    end
+    return output, totalLearnable
+end
+
+local function comboSort(a,b)
+    if a.expectedLearnable == b.expectedLearnable then
+        return a.price > b.price
+    end
+    return a.expectedLearnable > b.expectedLearnable
+end
+
+-- /script 
+function runAlchSearch(useDLC)
+    useDLC = (useDLC==nil) and false or useDLC
+    local reagentsByEffect = {}
+    for itemId, effects in pairs(AlchemyLearner.reagentTraits) do
+        if useDLC or not AlchemyLearner.dlcReagents[itemId] then
+            for i = 1, 4 do
+                local effectName = AlchemyLearner.reagentTraits[itemId][i]
+                reagentsByEffect[effectName] = reagentsByEffect[effectName] or {}
+                reagentsByEffect[effectName][#reagentsByEffect[effectName]+1] = {itemId, GetItemLinkName(getItemLinkFromItemId(itemId)) , defaultPrices[itemId]}
+            end
+        end
+    end
+    local a = reagentsByEffect
+    local potionCombos = {}
+    for k, v in pairs(a) do
+        -- d(" -- "..k.." -- ")
+        potionCombos[k] = {}
+        for i = 1, #a[k]-1 do
+            for j = i+1, #a[k] do
+                local learning, totalLearnable = calcOverlap(a[k][i],a[k][j])
+                local price = WritCreater.alchemyDefaultPrices[a[k][i][1]] + WritCreater.alchemyDefaultPrices[a[k][j][1]]
+                -- d("{"..a[k][i][1]..","..a[k][j][1].."} -- "..a[k][i][2].." and "..a[k][j][2].." learning "..table.concat(learning, " and ").." "..price.."g")
+                if totalLearnable > 0 then
+                    comboTable = {a[k][i], a[k][j], price=price, learning=learning, totalLearnable = totalLearnable, expectedLearnable = totalLearnable}
+                    potionCombos[k][#potionCombos[k]+1] = comboTable
+                    
+                end
+            end
+        end
+    end
+    for effect, combos in pairs(potionCombos) do
+        if #combos == 0 then
+            potionCombos[effect] = nil
+        end
+    end
+    return potionCombos
+-- d(a)
+end
+
+local function recalculateLearnables(potionCombos, comboToAdd)
+    local activeReagents = {[comboToAdd[1]] = true, [comboToAdd[2]] = true, }
+    for i = 1, #comboToAdd.learning do
+        local effectCombos = potionCombos[comboToAdd.learning[i]]
+        if effectCombos then
+            for j = #effectCombos, 1, -1 do
+                if activeReagents[effectCombos[j][1]] or activeReagents[effectCombos[j][2]] then
+                    local learning, newLearnable = calcOverlap(effectCombos[j][1], effectCombos[j][2])
+                    effectCombos[j].expectedLearnable = newLearnable
+                    if newLearnable == 0 then
+                        table.remove(effectCombos, j)
+                    end
+                end
+            end
+            table.sort(effectCombos, comboSort)
+            if #effectCombos == 0 then
+                potionCombos[comboToAdd.learning[i]] = nil
+            end
+        end
+    end
+end
+
+local function singlePass(potionCombos)
+    local effectName, effectCombos = next(potionCombos)
+    table.sort(effectCombos, comboSort)
+    local comboToAdd = effectCombos[1]
+    for i = 1, #comboToAdd.learning do
+        expectedKnown[comboToAdd[1][1]] [comboToAdd.learning[i]] = true
+        expectedKnown[comboToAdd[2][1]] [comboToAdd.learning[i]] = true
+    end
+    table.remove(effectCombos, 1)
+    recalculateLearnables(potionCombos, comboToAdd)
+    return comboToAdd
+end
+
+local function calculateCombos(useDLC)
+    populatePrices()
+    expectedKnown = populateExpectedKnownTraits()
+    local potionCombos = runAlchSearch(useDLC)
+    local combosToCraft = {}
+    while next(potionCombos) do
+        local comboToAdd = singlePass(potionCombos)
+        combosToCraft[#combosToCraft+1] = comboToAdd
+    end
+    return combosToCraft
+end
+
+
+AlchemyLearner.dlcReagents =
+{
+    [150789] = true,
+    [150731] = true,
+    [224357] = true,
+    [224358] = true,
+    [224359] = true,
+    [224360] = true,
+    [139019] = true,
+    [139020] = true,
+    [150671] = true,
 }
 
 --- List of all solvent IDs in ESO with poisons first and potions second, sorted by required alchemy proficiency
@@ -105,42 +254,48 @@ AlchemyLearner.solvents = {
 }
 
 -- a static list of all traits of each reagent, will be used to determine what combos still need to be executed
+-- /script for k,v in pairs(reagentInfo) do local l=getItemLinkFromItemId(k)local s="["..k..'] = {' for i = 1, 4 do local _,en=GetItemLinkReagentTraitInfo(l,i) s=s..'"'..en..'", ' end d(s.."}, -- "..GetItemLinkName(l)) end
 AlchemyLearner.reagentTraits = {
-    [77583] = {"Breach", "Increase Armor", "Protection", "Vitality"}, -- Beetle Scuttle
-    [30157] = {"Restore Stamina", "Increase Weapon Power", "Ravage Health", "Speed"}, -- Blessed Thistle
-    [30148] = {"Ravage Magicka", "Cowardice", "Restore Health", "Invisible"}, -- Blue Entoloma
-    [30160] = {"Increase Spell Resist", "Restore Health", "Cowardice", "Restore Magicka"}, -- Bugloss
-    [77585] = {"Restore Health", "Uncertainty", "Lingering Health", "Vitality"}, -- Butterfly Wing
-    [150669] = {"Timidity", "Ravage Magicka", "Restore Stamina", "Detection"}, -- Chaurus Egg
-    [139020] = {"Increase Spell Resist", "Hindrance", "Vulnerability", "Defile"}, -- Clam Gall
-    [30164] = {"Restore Health", "Restore Magicka", "Restore Stamina", "Unstoppable"}, -- Columbine
-    [30161] = {"Restore Magicka", "Increase Spell Power", "Ravage Health", "Detection"}, -- Corn Flower
-    [150672] = {"Timidity", "Spell Critical", "Gradual Ravage Health", "Restore Health"}, -- Crimson Nirnroot
-    [150671] = {"Restore Magicka", "Heroism", "Enervation", "Speed"}, -- Dragon Rheum
-    [150789] = {"Heroism", "Vulnerability", "Invisible", "Vitality"}, -- Dragon's Bile
-    [150731] = {"Lingering Health", "Restore Stamina", "Heroism", "Defile"}, -- Dragon's Blood
-    [30162] = {"Increase Weapon Power", "Restore Stamina", "Fracture", "Weapon Critical"}, -- Dragonthorn
-    [30151] = {"Ravage Health", "Ravage Magicka", "Ravage Stamina", "Entrapment"}, -- Emetic Russula
-    [77587] = {"Ravage Stamina", "Vulnerability", "Gradual Ravage Health", "Vitality"}, -- Fleshfly Larva
-    [30156] = {"Maim", "Ravage Stamina", "Increase Armor", "Enervation"}, -- Imp Stool
-    [30158] = {"Increase Spell Power", "Restore Magicka", "Breach", "Spell Critical"}, -- Lady's Smock
-    [30155] = {"Ravage Stamina", "Maim", "Restore Health", "Hindrance"}, -- Luminous Russula
-    [30163] = {"Increase Armor", "Restore Health", "Maim", "Restore Stamina"}, -- Mountain Flower
-    [77591] = {"Increase Spell Resist", "Increase Armor", "Protection", "Defile"}, -- Mudcrab Chitin
-    [30153] = {"Spell Critical", "Speed", "Invisible", "Unstoppable"}, -- Namira's Rot
-    [77590] = {"Ravage Health", "Protection", "Gradual Ravage Health", "Defile"}, -- Nightshade
-    [30165] = {"Ravage Health", "Uncertainty", "Enervation", "Invisible"}, -- Nirnroot
-    [139019] = {"Lingering Health", "Speed", "Vitality", "Protection"}, -- Powdered Mother of Pearl
-    [77589] = {"Ravage Magicka", "Speed", "Vulnerability", "Lingering Health"}, -- Scrib Jelly
-    [77584] = {"Hindrance", "Invisible", "Lingering Health", "Defile"}, -- Spider Egg
-    [30149] = {"Fracture", "Ravage Health", "Increase Weapon Power", "Ravage Stamina"}, -- Stinkhorn
-    [77581] = {"Fracture", "Enervation", "Detection", "Vitality"}, -- Torchbug Thorax
-    [150670] = {"Timidity", "Ravage Health", "Restore Magicka", "Protection"}, -- Vile Coagulant
-    [30152] = {"Breach", "Ravage Health", "Increase Spell Power", "Ravage Magicka"}, -- Violet Coprinus
-    [30166] = {"Restore Health", "Spell Critical", "Weapon Critical", "Entrapment"}, -- Water Hyacinth
-    [30154] = {"Cowardice", "Ravage Magicka", "Increase Spell Resist", "Detection"}, -- White Cap
-    [30159] = {"Weapon Critical", "Hindrance", "Detection", "Unstoppable"} -- Wormwood
+    [30148] = {"Ravage Magicka", "Heal Absorption", "Restore Health", "Invisible", }, -- blue entoloma
+    [150789] = {"Heroism", "Vulnerability", "Invisible", "Vitality", }, -- Dragon's Bile
+    [30151] = {"Ravage Health", "Ravage Magicka", "Ravage Stamina", "Entrapment", }, -- emetic russula
+    [30152] = {"Breach", "Ravage Health", "Increase Power", "Ravage Magicka", }, -- violet coprinus
+    [30153] = {"Enervation", "Speed", "Invisible", "Unstoppable", }, -- namira's rot
+    [30154] = {"Enervation", "Ravage Magicka", "Increase Spell Resist", "Detection", }, -- white cap
+    [150731] = {"Lingering Health", "Restore Stamina", "Heroism", "Defile", }, -- Dragon's Blood
+    [30156] = {"Cowardice", "Ravage Stamina", "Increase Armor", "Enervation", }, -- imp stool
+    [77581] = {"Fracture", "Uncertainty", "Detection", "Mending", }, -- Torchbug Thorax
+    [150670] = {"Timidity", "Ravage Health", "Restore Magicka", "Protection", }, -- Vile Coagulant
+    [77583] = {"Breach", "Increase Armor", "Protection", "Vitality", }, -- Beetle Scuttle
+    [150672] = {"Timidity", "Force", "Gradual Ravage Health", "Restore Health", }, -- Crimson Nirnroot
+    [77585] = {"Restore Health", "Damage Shield", "Lingering Health", "Vitality", }, -- Butterfly Wing
+    [30162] = {"Increase Power", "Restore Stamina", "Fracture", "Critical", }, -- dragonthorn
+    [30163] = {"Increase Armor", "Restore Health", "Cowardice", "Restore Stamina", }, -- mountain flower
+    [30164] = {"Restore Health", "Restore Magicka", "Restore Stamina", "Unstoppable", }, -- columbine
+    [30165] = {"Ravage Health", "Uncertainty", "Invisible", "Heal Absorption", }, -- nirnroot
+    [30166] = {"Restore Health", "Critical", "Entrapment", "Damage Shield", }, -- water hyacinth
+    [77591] = {"Increase Spell Resist", "Increase Armor", "Protection", "Defile", }, -- Mudcrab Chitin
+    [224357] = {"Heroism", "Increase Power", "Mending", "Damage Shield", }, -- Cultivated Cryptpods
+    [224358] = {"Defile", "Heal Absorption", "Cowardice", "Entrapment", }, -- Daedra-Blood Maggots
+    [224359] = {"Heroism", "Restore Stamina", "Force", "Detection", }, -- Fossilized Verminous Bones
+    [224360] = {"Vexation", "Heal Absorption", "Defile", "Breach", }, -- Winter's Grave Tongue
+    [150669] = {"Timidity", "Ravage Magicka", "Vexation", "Detection", }, -- Chaurus Egg
+    [139019] = {"Mending", "Speed", "Vitality", "Protection", }, -- Powdered Mother of Pearl
+    [30159] = {"Critical", "Hindrance", "Detection", "Unstoppable", }, -- wormwood
+    [30157] = {"Restore Stamina", "Increase Power", "Heal Absorption", "Speed", }, -- blessed thistle
+    [30155] = {"Ravage Stamina", "Restore Health", "Hindrance", "Cowardice", }, -- luminous russula
+    [77589] = {"Vexation", "Speed", "Vulnerability", "Lingering Health", }, -- Scrib Jelly
+    [77584] = {"Hindrance", "Invisible", "Damage Shield", "Defile", }, -- Spider Egg
+    [139020] = {"Increase Spell Resist", "Hindrance", "Vulnerability", "Defile", }, -- Clam Gall
+    [30160] = {"Increase Spell Resist", "Restore Health", "Mending", "Restore Magicka", }, -- bugloss
+    [150671] = {"Restore Magicka", "Uncertainty", "Heroism", "Speed", }, -- Dragon Rheum
+    [77590] = {"Ravage Health", "Protection", "Gradual Ravage Health", "Defile", }, -- Nightshade
+    [30161] = {"Restore Magicka", "Increase Power", "Ravage Health", "Detection", }, -- corn flower
+    [77587] = {"Ravage Stamina", "Vulnerability", "Gradual Ravage Health", "Vitality", }, -- Fleshfly Larva||Fleshfly Larvae
+    [30158] = {"Force", "Restore Magicka", "Breach", "Critical", }, -- lady's smock
+    [30149] = {"Fracture", "Ravage Health", "Force", "Ravage Stamina", }, -- stinkhorn
 }
+
 
 -- used to store the calculated amount of inventory of each reagent
 AlchemyLearner.reagentAmounts = {}
@@ -209,12 +364,11 @@ function AlchemyLearner.alchemyQueuer(combos)
         Utils.sendChatMessage(LazyLearner.L("LL_NEED_SOLVENTS"), Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
         return queued
     end
-
     for i = 1, #combos do
         local known = true
 
-        local reagentItemId1 = combos[i][1]
-        local reagentItemId2 = combos[i][2]
+        local reagentItemId1 = combos[i][1][1]
+        local reagentItemId2 = combos[i][2][1]
 
         -- we check what traits between the two reagents are matching
         local theoreticalMatchingTraits = AlchemyLearner.GetMatchingTraits(reagentItemId1, reagentItemId2)
@@ -332,12 +486,10 @@ end
 function AlchemyLearner.queueLearningAlchemy(includeDlc)
     -- First clear the current alchemy queue to ensure there is nothing left from previous attempt
     LazyLearner.LLC:cancelItem(CRAFTING_TYPE_ALCHEMY)
-
-    local queued = AlchemyLearner.alchemyQueuer(AlchemyLearner.basegameCombo)
-    if includeDlc then
-        queued = AlchemyLearner.alchemyQueuer(AlchemyLearner.dlcCombos) + queued
-    end
-
+    local combosToCraft = calculateCombos(includeDlc)
+    
+    local queued = AlchemyLearner.alchemyQueuer(combosToCraft)
+    
     local freeSlots = GetNumBagFreeSlots(BAG_BACKPACK)
     if queued > freeSlots then
         Utils.sendChatMessage(string.format(LazyLearner.L("LL_BAG_WARNING"), queued, freeSlots),

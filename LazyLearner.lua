@@ -67,22 +67,22 @@ local function genericSlashCommand(args)
         Utils.sendChatMessage("Possible commands:")
         Utils.sendChatMessage("/lazylearn alchemy --> " .. LazyLearner.L("LL_COMMANDS_ALCHEMY_BASEGAME"))
         Utils.sendChatMessage("/lazylearn alchemy all --> " .. LazyLearner.L("LL_COMMANDS_ALCHEMY_ALL"))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn enchant --> " .. LazyLearner.L("LL_COMMANDS_ENCHANT_BASEGAME"),
             Utils.getItemLinkFromItemId(45854), Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045)))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn enchant withdlc --> " .. LazyLearner.L("LL_COMMANDS_ENCHANT_WITHDLC"),
             Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045), Utils.getItemLinkFromItemId(45854)))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn enchant withkuta --> " .. LazyLearner.L("LL_COMMANDS_ENCHANT_WITHKUTA"),
             Utils.getItemLinkFromItemId(45854), Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045)))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn enchant all --> " .. LazyLearner.L("LL_COMMANDS_ENCHANT_ALL"),
             Utils.getItemLinkFromItemId(45854), Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045)))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn both --> " .. LazyLearner.L("LL_COMMANDS_BOTH"),
             Utils.getItemLinkFromItemId(45854), Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045)))
-        Utils.sendChatMessage(format.string(
+        Utils.sendChatMessage(string.format(
             "/lazylearn both all --> " .. LazyLearner.L("LL_COMMANDS_BOTH_ALL"),
             Utils.getItemLinkFromItemId(45854), Utils.getItemLinkFromItemId(68342), Utils.getItemLinkFromItemId(166045)))
     end
