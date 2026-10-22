@@ -95,7 +95,6 @@ local function isTraitExpectedKnown(itemId, traitName)
     return expectedKnown[itemId][traitName]
 end
 
-local reagentInfo = WritCreater.reagentInfo
 local function calcOverlap(r1,r2)
     local reagentItemId1 = r1[1]
     local reagentItemId2 = r2[1]
@@ -139,7 +138,7 @@ function runAlchSearch(useDLC)
             for i = 1, 4 do
                 local effectName = AlchemyLearner.reagentTraits[itemId][i]
                 reagentsByEffect[effectName] = reagentsByEffect[effectName] or {}
-                reagentsByEffect[effectName][#reagentsByEffect[effectName]+1] = {itemId, GetItemLinkName(getItemLinkFromItemId(itemId)) , defaultPrices[itemId]}
+                reagentsByEffect[effectName][#reagentsByEffect[effectName]+1] = {itemId, GetItemLinkName(Utils.getItemLinkFromItemId(itemId)) , defaultPrices[itemId]}
             end
         end
     end
@@ -151,7 +150,7 @@ function runAlchSearch(useDLC)
         for i = 1, #a[k]-1 do
             for j = i+1, #a[k] do
                 local learning, totalLearnable = calcOverlap(a[k][i],a[k][j])
-                local price = WritCreater.alchemyDefaultPrices[a[k][i][1]] + WritCreater.alchemyDefaultPrices[a[k][j][1]]
+                local price = defaultPrices[a[k][i][1]] + defaultPrices[a[k][j][1]]
                 -- d("{"..a[k][i][1]..","..a[k][j][1].."} -- "..a[k][i][2].." and "..a[k][j][2].." learning "..table.concat(learning, " and ").." "..price.."g")
                 if totalLearnable > 0 then
                     comboTable = {a[k][i], a[k][j], price=price, learning=learning, totalLearnable = totalLearnable, expectedLearnable = totalLearnable}
