@@ -4,7 +4,8 @@ local EnchantingLearner = LazyLearner.EnchantingLearner
 local AlchemyLearner = LazyLearner.AlchemyLearner
 
 
--- rules for negative trait learning:
+-- rules for negative trait learning
+
 -- Only if it's a 3 reagent potion, with two matching the positive. Then you learn the negative
 -- Both positive traits do not need to be known
 -- potion has to be created
@@ -95,13 +96,26 @@ local function isTraitExpectedKnown(itemId, traitName)
     return expectedKnown[itemId][traitName]
 end
 
-local function calcOverlap(r1,r2)
+local function anyExpectedUnknown(itemId)
+    for k, v in pairs(expectedKnown[itemId]) do
+        if not v then
+            return true
+        end
+    end
+    return false
+end
+
+local function calcOverlap(r1,r2, r3)
     local reagentItemId1 = r1[1]
     local reagentItemId2 = r2[1]
+    local reagentItemId3 = r3 and r3[1] or nil
     local effects = {}
     for i =1, 4 do
         effects[AlchemyLearner.reagentTraits[reagentItemId1][i]] = (effects[AlchemyLearner.reagentTraits[reagentItemId1][i]] or 0 ) + 1
         effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] = (effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] or 0 ) + 1
+        if r3 then
+            effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] = (effects[AlchemyLearner.reagentTraits[reagentItemId2][i]] or 0 ) + 1
+        end
     end
     for k, v in pairs(effects) do
         if v==1 then
@@ -116,6 +130,9 @@ local function calcOverlap(r1,r2)
             totalLearnable = totalLearnable + 1
         end
         if not isTraitExpectedKnown(reagentItemId2, k) then
+            totalLearnable = totalLearnable + 1
+        end
+        if r3 and (not isTraitExpectedKnown(reagentItemId3, k)) then
             totalLearnable = totalLearnable + 1
         end
     end
@@ -134,12 +151,19 @@ function runAlchSearch(useDLC)
     useDLC = (useDLC==nil) and false or useDLC
     local reagentsByEffect = {}
     for itemId, effects in pairs(AlchemyLearner.reagentTraits) do
-        if useDLC or not AlchemyLearner.dlcReagents[itemId] then
+        local bag, bank, craftBag, houseBank = GetItemLinkStacks(Utils.getItemLinkFromItemId(itemId))
+        local storedAmount = bag + bank + craftBag + houseBank
+        AlchemyLearner.reagentTraits[itemId].expectedAmount = storedAmount
+        if (useDLC or not AlchemyLearner.dlcReagents[itemId]) and storedAmount > 0 then
             for i = 1, 4 do
                 local effectName = AlchemyLearner.reagentTraits[itemId][i]
                 reagentsByEffect[effectName] = reagentsByEffect[effectName] or {}
                 reagentsByEffect[effectName][#reagentsByEffect[effectName]+1] = {itemId, GetItemLinkName(Utils.getItemLinkFromItemId(itemId)) , defaultPrices[itemId]}
             end
+        elseif storedAmount == 0 and (useDLC or not AlchemyLearner.dlcReagents[itemId]) and anyExpectedUnknown(itemId) then
+            d("You do not have any "..Utils.getItemLinkFromItemId(itemId).." - cannot learn traits for this reagent")
+        else
+            d(Utils.getItemLinkFromItemId(itemId))
         end
     end
     local a = reagentsByEffect
@@ -169,14 +193,34 @@ function runAlchSearch(useDLC)
 -- d(a)
 end
 
-local function recalculateLearnables(potionCombos, comboToAdd)
-    local activeReagents = {[comboToAdd[1]] = true, [comboToAdd[2]] = true, }
+local function recalculateAllLearnables(potionCombos)
+    local effectName, effectCombos = next(potionCombos)
+    if not effectName then return end
+    for j = #effectCombos, 1, -1 do
+        local learning, newLearnable = calcOverlap(effectCombos[j][1], effectCombos[j][2], effectCombos[j][3])
+        effectCombos[j].expectedLearnable = newLearnable
+        if newLearnable == 0 then
+            table.remove(effectCombos, j)
+        end
+    end
+    table.sort(effectCombos, comboSort)
+    if #effectCombos == 0 then
+        potionCombos[effectName] = nil
+        recalculateAllLearnables(potionCombos)
+    end
+end
+
+local function recalculateLearnables(potionCombos, comboToAdd, calculateAll)
+    local activeReagents = {[comboToAdd[1]] = true, [comboToAdd[2]] = true,  }
+    if comboToAdd[3] then
+        table.add(activeReagents, comboToAdd[3])
+    end
     for i = 1, #comboToAdd.learning do
         local effectCombos = potionCombos[comboToAdd.learning[i]]
         if effectCombos then
             for j = #effectCombos, 1, -1 do
-                if activeReagents[effectCombos[j][1]] or activeReagents[effectCombos[j][2]] then
-                    local learning, newLearnable = calcOverlap(effectCombos[j][1], effectCombos[j][2])
+                if calculateAll or (activeReagents[effectCombos[j][1]] or activeReagents[effectCombos[j][2]] or (effectCombos[j][3] and activeReagents[effectCombos[j][3]])) then
+                    local learning, newLearnable = calcOverlap(effectCombos[j][1], effectCombos[j][2], effectCombos[j][3])
                     effectCombos[j].expectedLearnable = newLearnable
                     if newLearnable == 0 then
                         table.remove(effectCombos, j)
@@ -186,18 +230,61 @@ local function recalculateLearnables(potionCombos, comboToAdd)
             table.sort(effectCombos, comboSort)
             if #effectCombos == 0 then
                 potionCombos[comboToAdd.learning[i]] = nil
+                recalculateAllLearnables(potionCombos)
             end
         end
     end
 end
+-- AlchemyLearner.reagentTraits[itemId].expectedAmount
+local warnedIDs = {}
+
 
 local function singlePass(potionCombos)
     local effectName, effectCombos = next(potionCombos)
     table.sort(effectCombos, comboSort)
     local comboToAdd = effectCombos[1]
+    local missingAny = true -- we want first loop
+    while missingAny do
+        missingAny = false
+        if AlchemyLearner.reagentTraits[comboToAdd[1][1]].expectedAmount < 1 then
+            if not warnedIDs[comboToAdd[1][1]] then
+                Utils.sendChatMessage(zo_strformat(LazyLearner.L("LL_NOT_ENOUGH_REAGENTS"),
+                    Utils.getItemLinkFromItemId(comboToAdd[1][1])), Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
+                warnedIDs[comboToAdd[1][1]] = true
+            end
+            missingAny = true
+        end
+        if AlchemyLearner.reagentTraits[comboToAdd[2][1]].expectedAmount < 1 then
+            if not warnedIDs[comboToAdd[2][1]] then
+                Utils.sendChatMessage(zo_strformat(LazyLearner.L("LL_NOT_ENOUGH_REAGENTS"),
+                    Utils.getItemLinkFromItemId(comboToAdd[2][1])), Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
+                warnedIDs[comboToAdd[2][1]] = true
+            end
+            missingAny = true
+        end
+        if comboToAdd[3] and AlchemyLearner.reagentTraits[comboToAdd[3][1]].expectedAmount < 1 then
+            if not warnedIDs[comboToAdd[3][1]] then
+                Utils.sendChatMessage(zo_strformat(LazyLearner.L("LL_NOT_ENOUGH_REAGENTS"),
+                    Utils.getItemLinkFromItemId(comboToAdd[3][1])), Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
+                warnedIDs[comboToAdd[3][1]] = true
+            end
+            missingAny = true
+        end
+        if missingAny then
+            table.remove(effectCombos, 1)
+            comboToAdd = effectCombos[1]
+        end
+    end
+    
     for i = 1, #comboToAdd.learning do
         expectedKnown[comboToAdd[1][1]] [comboToAdd.learning[i]] = true
         expectedKnown[comboToAdd[2][1]] [comboToAdd.learning[i]] = true
+        AlchemyLearner.reagentTraits[comboToAdd[1][1]].expectedAmount = AlchemyLearner.reagentTraits[comboToAdd[1][1]].expectedAmount - 1
+        AlchemyLearner.reagentTraits[comboToAdd[2][1]].expectedAmount = AlchemyLearner.reagentTraits[comboToAdd[2][1]].expectedAmount - 1
+        if comboToAdd[3] then
+            expectedKnown[comboToAdd[3][1]] [comboToAdd.learning[i]] = true
+            AlchemyLearner.reagentTraits[comboToAdd[3][1]].expectedAmount = AlchemyLearner.reagentTraits[comboToAdd[3][1]].expectedAmount - 1
+        end
     end
     table.remove(effectCombos, 1)
     recalculateLearnables(potionCombos, comboToAdd)
@@ -205,13 +292,16 @@ local function singlePass(potionCombos)
 end
 
 local function calculateCombos(useDLC)
+    warnedIDs = {}
     populatePrices()
     expectedKnown = populateExpectedKnownTraits()
     local potionCombos = runAlchSearch(useDLC)
     local combosToCraft = {}
     while next(potionCombos) do
         local comboToAdd = singlePass(potionCombos)
-        combosToCraft[#combosToCraft+1] = comboToAdd
+        if comboToAdd then
+            combosToCraft[#combosToCraft+1] = comboToAdd
+        end
     end
     return combosToCraft
 end
@@ -295,6 +385,32 @@ AlchemyLearner.reagentTraits = {
     [30149] = {"Fracture", "Ravage Health", "Force", "Ravage Stamina", }, -- stinkhorn
 }
 
+local negativeTraits =
+{
+    ["Restore Health"] = "Ravage Health",
+    ["Restore Magicka"] = "Ravage Magicka",
+    ["Restore Stamina"] = "Ravage Stamina",
+    ["Increase Power"] = "Cowardice",
+    ["Force"] = "Enervation",
+    ["Critical"] = "Uncertainty",
+    ["Lingering Health"] = "Gradual Ravage Health",
+    ["Speed"] = "Hindrance",
+    ["Protection"] = "Vulnerability",
+    ["Increase Armor"] = "Fracture",
+    ["Increase Spell Resist"] = "Breach",
+    ["Vitality"] = "Defile",
+    ["Detection"] = "Invisible",
+    ["Unstoppable"] = "Entrapment",
+    ["Heroism"] = "Timidity",
+    ["Mending"] = "Vexation",
+    ["Damage Shield"] = "Heal Absorption",
+}
+local allNegativeTraits = {}
+for k, v in pairs(negativeTraits) do
+    allNegativeTraits[v] = k
+    allNegativeTraits[k] = v
+end
+negativeTraits = nil
 
 -- used to store the calculated amount of inventory of each reagent
 AlchemyLearner.reagentAmounts = {}
@@ -324,11 +440,37 @@ function AlchemyLearner.getSolvent(proficiency, startingPosition)
     return nil, nil, nil
 end
 
+local function threeReagentMatchingTraits(reagent1, reagent2, reagent3)
+    local traits1 = AlchemyLearner.reagentTraits[reagent1]
+    local traits2 = AlchemyLearner.reagentTraits[reagent2]
+    local traits3 = AlchemyLearner.reagentTraits[reagent3]
+
+    local traitCount = {}
+    for i = 1, 4 do
+        traitCount[traits1[i]] = (traitCount[traits1[i]] or 0) + 1
+        traitCount[traits2[i]] = (traitCount[traits2[i]] or 0) + 1
+
+        traitCount[allNegativeTraits[traits1[i]]] = (traitCount[allNegativeTraits[traits1[i]]] or 0) - 1
+        traitCount[allNegativeTraits[traits2[i]]] = (traitCount[allNegativeTraits[traits2[i]]] or 0) - 1
+        if reagent3 then
+            traitCount[traits3[i]] = (traitCount[traits3[i]] or 0) + 1
+            traitCount[allNegativeTraits[traits3[i]]] = (traitCount[allNegativeTraits[traits3[i]]] or 0) - 1
+        end
+    end
+    local matchingTraits = {}
+    for k, v in pairs(traitCount) do
+        if v > 1 then
+            table.insert(matchingTraits, k)
+        end
+    end
+    return matchingTraits
+end
+
 --- Find the matching traits between two reagents.
 --- @param reagent1 The item ID of the first reagent.
 --- @param reagent2 The item ID of the second reagent.
 --- @return A table containing the matching traits.
-function AlchemyLearner.GetMatchingTraits(reagent1, reagent2)
+function AlchemyLearner.GetMatchingTraits(reagent1, reagent2, reagent3)
     local traits1 = AlchemyLearner.reagentTraits[reagent1]
     local traits2 = AlchemyLearner.reagentTraits[reagent2]
     local matchingTraits = {}
