@@ -30,6 +30,7 @@ end
 --- @param itemId The ID of the item.
 --- @return A string representing the item link.
 function Utils.getItemLinkFromItemId(itemId)
+    if itemId == nil then return nil end
     return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, 0, 0, 10000)
 end
 
