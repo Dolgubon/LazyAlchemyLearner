@@ -63,6 +63,9 @@ local function genericSlashCommand(args)
             LazyLearner.enchantingLearner(false, false)
             return
         end
+    elseif searchResult[1] == 'cancel' then
+        LazyLearner.LLC:cancelItem()
+        Utils.sendChatMessage("Cancelled all queued items")
     else
         Utils.sendChatMessage("Possible commands:")
         Utils.sendChatMessage("/lazylearn alchemy --> " .. LazyLearner.L("LL_COMMANDS_ALCHEMY_BASEGAME"))

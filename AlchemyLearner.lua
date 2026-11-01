@@ -161,6 +161,26 @@ end
 local function ennumerateAllCombos(reagentList)
     local totalCombos = 0
     local potionCombos = {}
+    for i = 1, #reagentList-1 do
+        for j = i+1, #reagentList do
+            local learning, totalLearnable = calcOverlap(reagentList[i], reagentList[j])
+            local price = reagentList[i][3] + reagentList[j][3]
+            -- d("{"..a[k][i][1]..","..a[k][j][1].."} -- "..a[k][i][2].." and "..a[k][j][2].." learning "..table.concat(learning, " and ").." "..price.."g")
+            if totalLearnable > 0 then
+                local comboTable = {reagentList[i], reagentList[j], price=price, learning=learning, totalLearnable = totalLearnable, expectedLearnable = totalLearnable}
+                totalCombos = totalCombos + 1
+                for effectName, v in pairs(learning) do
+                    potionCombos[effectName] = potionCombos[effectName] or {}
+                    potionCombos[effectName][#potionCombos[effectName]+1] = comboTable
+                end
+            end
+        end
+    end
+    --45555
+    local _,_,_,_,_,canUseThreeReagents = GetSkillAbilityInfo (8,1,5)
+    if not canUseThreeReagents then
+        return potionCombos
+    end
     for i = 1, #reagentList-2 do
         for j = i+1, #reagentList-1 do
             for k = j+1, #reagentList do
@@ -178,21 +198,7 @@ local function ennumerateAllCombos(reagentList)
             end
         end
     end
-    for i = 1, #reagentList-2 do
-        for j = i+1, #reagentList-1 do
-            local learning, totalLearnable = calcOverlap(reagentList[i], reagentList[j])
-            local price = reagentList[i][3] + reagentList[j][3]
-            -- d("{"..a[k][i][1]..","..a[k][j][1].."} -- "..a[k][i][2].." and "..a[k][j][2].." learning "..table.concat(learning, " and ").." "..price.."g")
-            if totalLearnable > 0 then
-                local comboTable = {reagentList[i], reagentList[j], price=price, learning=learning, totalLearnable = totalLearnable, expectedLearnable = totalLearnable}
-                totalCombos = totalCombos + 1
-                for effectName, v in pairs(learning) do
-                    potionCombos[effectName] = potionCombos[effectName] or {}
-                    potionCombos[effectName][#potionCombos[effectName]+1] = comboTable
-                end
-            end
-        end
-    end
+
     return potionCombos
 end
 
@@ -213,9 +219,10 @@ local function runAlchSearch(useDLC)
             end
             table.insert(reagentList, {itemId, GetItemLinkName(Utils.getItemLinkFromItemId(itemId)) , defaultPrices[itemId]})
         elseif storedAmount == 0 and (useDLC or not AlchemyLearner.dlcReagents[itemId]) and anyExpectedUnknown(itemId) then
-            d("You do not have any "..Utils.getItemLinkFromItemId(itemId).." - cannot learn traits for this reagent")
+            Utils.sendChatMessage("You do not have any "..Utils.getItemLinkFromItemId(itemId).." - cannot learn traits for this reagent"
+                ,Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
         else
-            d(Utils.getItemLinkFromItemId(itemId))
+            -- d(Utils.getItemLinkFromItemId(itemId))
         end
     end
     local potionCombos = {}
@@ -282,8 +289,25 @@ local function recalculateLearnables(potionCombos, comboToAdd)
             table.sort(effectCombos, comboSort)
             if #effectCombos == 0 then
                 potionCombos[comboToAdd.learning[i]] = nil
-                recalculateAllLearnables(potionCombos)
+                -- recalculateAllLearnables(potionCombos)
             end
+        end
+    end
+end
+
+local function recalculateEffectLearnables(potionCombos, effectName, effectCombos)
+    if effectCombos then
+        for j = #effectCombos, 1, -1 do
+            local learning, newLearnable = calcOverlap(effectCombos[j][1], effectCombos[j][2], effectCombos[j][3])
+            effectCombos[j].expectedLearnable = newLearnable
+            if newLearnable == 0 then
+                table.remove(effectCombos, j)
+            end
+        end
+        table.sort(effectCombos, comboSort)
+        if #effectCombos == 0 then
+            potionCombos[effectName] = nil
+            -- recalculateAllLearnables(potionCombos)
         end
     end
 end
@@ -293,6 +317,7 @@ local warnedIDs = {}
 
 local function singlePass(potionCombos)
     local effectName, effectCombos = next(potionCombos)
+    recalculateEffectLearnables(potionCombos, effectName, effectCombos)
     table.sort(effectCombos, comboSort)
     local comboToAdd = effectCombos[1]
     local missingAny = true -- we want first loop
@@ -349,7 +374,7 @@ local function singlePass(potionCombos)
         end
     end
     table.remove(effectCombos, 1)
-    recalculateLearnables(potionCombos, comboToAdd)
+    -- recalculateLearnables(potionCombos, comboToAdd)
     return comboToAdd
 end
 
@@ -700,7 +725,7 @@ function AlchemyLearner.alchemyQueuer(combos)
                 if LazyLearner.savedVars.extensiveReporting then
                     Utils.sendChatMessage(string.format(LazyLearner.L("LL_QUEUED_ITEM"),
                         Utils.getItemLinkFromItemId(solvent), Utils.getItemLinkFromItemId(reagentItemId1),
-                        Utils.getItemLinkFromItemId(reagentItemId2)))
+                        Utils.getItemLinkFromItemId(reagentItemId3), Utils.getItemLinkFromItemId(reagentItemId2)))
                 end
             end
         end
@@ -737,6 +762,11 @@ function AlchemyLearner.queueLearningAlchemy(includeDlc)
     end
     if GetDisplayName() == "@Dolgubon" then
         d(#craftingQueue['LazyAlchemyLearner'][4].. " queued (Properly hidden debug message)")
+    end
+        local _,_,_,_,_,canUseThreeReagents = GetSkillAbilityInfo (8,1,5)
+    if queued > 0 and not canUseThreeReagents then
+        Utils.sendChatMessage("Note: Only using potions with two reagents. To save materials, level to alchemy level 15 and purchase Laboratory use. If you wish to unqueue everything, go to the settings menu or type /lazylearn cancel",
+            Utils.RGBColorToHex(LazyLearner.savedVars.warningColor))
     end
     return queued > 0
 end
