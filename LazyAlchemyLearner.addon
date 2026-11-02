@@ -9,9 +9,10 @@
 ## Author: Dolgubon (PC), msetten (Console), Mathinator (Contributing)
 ## Version: 1.1.6
 ## AddOnVersion: 116
-## DependsOn: LibLazyCrafting LibAddonMenu-2.0
+## DependsOn: LibLazyCrafting 
 ## OptionalDependsOn: LibPrice
-## ConsoleDependsOn: LibChatMessage LibPrice
+## ConsoleDependsOn: LibChatMessage LibPrice LibHarvensAddonSettings
+## PCDependsOn: LibAddonMenu-2.0
 ## SavedVariables: LazyLearnerSavedVars
 ## Description: Learn alchemy traits and enchanting runes quickly
 

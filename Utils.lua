@@ -26,12 +26,17 @@ function Utils.RGBColorToHex(color)
     return Utils.RGBToHex(color.r, color.g, color.b)
 end
 
+local itemLinkCache = {}
 --- Generates an eso item link string for a given item ID.
 --- @param itemId The ID of the item.
 --- @return A string representing the item link.
 function Utils.getItemLinkFromItemId(itemId)
     if itemId == nil then return nil end
-    return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, 0, 0, 10000)
+
+    if itemLinkCache[itemId] then return itemLinkCache[itemId] end
+    local link = string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, 0, 0, 10000)
+    itemLinkCache[itemId] = link
+    return link
 end
 
 --- Gets the total number of available items across all bags (inventory, bank and craftbag) for a given item ID.

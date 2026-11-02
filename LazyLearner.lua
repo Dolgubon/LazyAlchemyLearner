@@ -43,6 +43,8 @@ function LazyLearner.alchemyLearner(includeAll)
   end
 end
 
+
+
 --- Handles the /lazylearn slash commands
 --- @param args The arguments passed to the slash command
 local function genericSlashCommand(args)
